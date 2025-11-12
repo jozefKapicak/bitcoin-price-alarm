@@ -647,7 +647,8 @@
 
             /* 4. Načítaj posledný aktívny coin (OPRAVA: 'lastUsedCoin' namiesto 'activeCoin') */
             currentCoinSymbol = settings.lastUsedCoin || 'BTCUSDT';
-            coinSymbolInput.value = currentCoinSymbol; 
+            /* OPRAVA v10.3: Nechceme, aby sa input na pridávanie menil pri načítaní */
+            /* coinSymbolInput.value = currentCoinSymbol; */ 
 
             /* 5. Aplikuj nastavenia pre aktívny coin */
             applyCurrentCoinSettings(false);
@@ -836,10 +837,9 @@
                     coinSettingsToSave = { low: 0, high: 0 }; 
                 }
                 
-                /* Vždy reštartuj monitoring */
-                currentBtcPrice = 0; 
-                firstSuccessfulFetch = false; 
-                applyCurrentCoinSettings(true); // true = reštartuj monitorovanie
+                /* OPRAVA v10.3: Presunuté na koniec funkcie.
+                   applyCurrentCoinSettings(true); // true = reštartuj monitorovanie
+                */
             }
 
             /* --- Uloženie 1: Globálne Nastavenia --- */
@@ -884,9 +884,16 @@
                     await setDoc(userSettingsRef, globalSettingsToSave, { merge: true });
                 } catch (e) {
                     console.error("Chyba pri ukladaní globálnych nastavení:", e);
-                }
             }
         }
+            
+        /* --- OPRAVA v10.3: Reštartuj monitorovanie AŽ PO uložení --- */
+        if (!fromDrag) { // Ak to bolo volané z "Uložiť Hranice"
+            currentBtcPrice = 0; 
+            firstSuccessfulFetch = false; 
+            applyCurrentCoinSettings(true); // true = reštartuj monitorovanie
+        }
+    }
 
 
         /* --- Zvuk Alarmu (Tone.js) --- */
@@ -961,7 +968,8 @@
             globalSettings.apiSource = apiSourceSelect.value;
             
             /* 2. Nastav nový coin */
-            coinSymbolInput.value = symbol; 
+            /* OPRAVA v10.3: Nechceme, aby sa input na pridávanie menil pri výbere */
+            /* coinSymbolInput.value = symbol; */ 
             currentCoinSymbol = symbol; 
             
             /* 3. Prekresli UI obľúbených (zvýrazní sa nový) */
