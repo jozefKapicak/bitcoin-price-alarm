@@ -989,7 +989,9 @@
             applyCurrentCoinSettings(true); /* true = je to nový coin, reštartuj */
 
             /* 5. Ulož zmenu (posledný coin A NOVÝ INTERVAL) do globálnych nastavení */
-            saveSettings(true); /* true = bez reštartu (už sa stal) */
+            /* OPRAVA v10.7: Nemeníme coinSettings, iba globálne (posledný coin) */
+            /* Tým sa zabráni uloženiu {low: 0, high: 0} a povolí sa 0.1% reset */
+            saveGlobalSettingsOnly(); 
         }
 
         /* OPRAVA (v10.2): Odstráni obľúbenú položku */
