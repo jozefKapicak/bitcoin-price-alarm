@@ -1158,66 +1158,99 @@
             
             let url = '';
             let price = 0;
+            // OPRAVA: Definícia premenných presunutá sem, aby bola prístupná aj v catch bloku
+            let original_url = '';
+            let response, textData;
 
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 8000); /* 8 sekundový timeout */
+            // OPRAVA: Predĺžený timeout
+            const timeoutId = setTimeout(() => controller.abort(), 12000); /* 12 sekundový timeout */
             const options = { signal: controller.signal };
 
-            // OPRAVA: Tretí pokus o proxy server na obídenie CORS chýb (Failed to fetch)
-            // Použijeme https://api.codetabs.com/v1/proxy?quest=
-            const PROXY_URL = 'https://api.codetabs.com/v1/proxy?quest=';
+            // OPRAVA: Šiesty pokus o proxy server. Skúsime https://cors.eu.org/
+            const PROXY_PREFIX = 'https://cors.eu.org/';
 
             try {
                 let data;
+                // Premenné boli presunuté vyššie
+
                 switch (source) {
                     /* --- Perp / Swapy --- */
                     case 'bybit-perp-linear':
                         apiSymbol = symbol; /* Formát: BTCUSDT */
-                        url = `${PROXY_URL}https://api.bybit.com/v5/market/tickers?category=linear&symbol=${apiSymbol}`;
-                        data = await (await fetch(url, options)).json();
+                        original_url = `https://api.bybit.com/v5/market/tickers?category=linear&symbol=${apiSymbol}`;
+                        url = `${PROXY_PREFIX}${original_url}`;
+                        response = await fetch(url, options);
+                        if (!response.ok) throw new Error(`Proxy/API error: ${response.status}`);
+                        textData = await response.text();
+                        data = JSON.parse(textData);
                         if (!data.result || !data.result.list || !data.result.list[0]) throw new Error("Neplatná odpoveď Bybit Perp Linear");
                         price = parseFloat(data.result.list[0].lastPrice);
                         break;
                     case 'bybit-perp-inverse':
                         apiSymbol = symbol.endsWith('USD') ? symbol : `${symbol}USD`; /* Formát: BTCUSD */
-                        url = `${PROXY_URL}https://api.bybit.com/v5/market/tickers?category=inverse&symbol=${apiSymbol}`;
-                        data = await (await fetch(url, options)).json();
+                        original_url = `https://api.bybit.com/v5/market/tickers?category=inverse&symbol=${apiSymbol}`;
+                        url = `${PROXY_PREFIX}${original_url}`;
+                        response = await fetch(url, options);
+                        if (!response.ok) throw new Error(`Proxy/API error: ${response.status}`);
+                        textData = await response.text();
+                        data = JSON.parse(textData);
                         if (!data.result || !data.result.list || !data.result.list[0]) throw new Error("Neplatná odpoveď Bybit Perp Inverse");
                         price = parseFloat(data.result.list[0].lastPrice);
                         break;
                     case 'okx-swap':
                         apiSymbol = symbol.includes('-') ? symbol : `${symbol.replace('USDT', '')}-USDT-SWAP`; /* Formát: BTC-USDT-SWAP */
-                        url = `${PROXY_URL}https://www.okx.com/api/v5/market/ticker?instId=${apiSymbol}`;
-                        data = await (await fetch(url, options)).json();
+                        original_url = `https://www.okx.com/api/v5/market/ticker?instId=${apiSymbol}`;
+                        url = `${PROXY_PREFIX}${original_url}`;
+                        response = await fetch(url, options);
+                        if (!response.ok) throw new Error(`Proxy/API error: ${response.status}`);
+                        textData = await response.text();
+                        data = JSON.parse(textData);
                         if (!data.data || !data.data[0] || !data.data[0].last) throw new Error("Neplatná odpoveď OKX SWAP");
                         price = parseFloat(data.data[0].last);
                         break;
                     case 'deribit-perp':
                         apiSymbol = symbol.includes('-') ? symbol : `${symbol.replace('USD', '')}-PERPETUAL`; /* Formát: BTC-PERPETUAL */
-                        url = `${PROXY_URL}https://www.deribit.com/api/v2/public/ticker?instrument_name=${apiSymbol}`;
-                        data = await (await fetch(url, options)).json();
+                        original_url = `https://www.deribit.com/api/v2/public/ticker?instrument_name=${apiSymbol}`;
+                        url = `${PROXY_PREFIX}${original_url}`;
+                        response = await fetch(url, options);
+                        if (!response.ok) throw new Error(`Proxy/API error: ${response.status}`);
+                        textData = await response.text();
+                        data = JSON.parse(textData);
                         if (!data.result || !data.result.last_price) throw new Error("Neplatná odpoveď Deribit");
                         price = parseFloat(data.result.last_price);
                         break;
                     case 'bitmex-perp':
                         apiSymbol = symbol.replace('USDT', 'USD'); /* Formát: XBTUSD */
                         if (apiSymbol === 'BTCUSD') apiSymbol = 'XBTUSD';
-                        url = `${PROXY_URL}https://www.bitmex.com/api/v1/instrument?symbol=${apiSymbol}`;
-                        data = await (await fetch(url, options)).json();
+                        original_url = `https://www.bitmex.com/api/v1/instrument?symbol=${apiSymbol}`;
+                        url = `${PROXY_PREFIX}${original_url}`;
+                        response = await fetch(url, options);
+                        if (!response.ok) throw new Error(`Proxy/API error: ${response.status}`);
+                        textData = await response.text();
+                        data = JSON.parse(textData);
                         if (!data[0] || !data[0].lastPrice) throw new Error("Neplatná odpoveď BitMEX");
                         price = parseFloat(data[0].lastPrice);
                         break;
                     case 'bitget-perp':
                         apiSymbol = symbol; /* Formát: BTCUSDT */
-                        url = `${PROXY_URL}https://api.bitget.com/api/v2/mix/market/ticker?productType=usdt-futures&symbol=${apiSymbol}`;
-                        data = await (await fetch(url, options)).json();
+                        original_url = `https://api.bitget.com/api/v2/mix/market/ticker?productType=usdt-futures&symbol=${apiSymbol}`;
+                        url = `${PROXY_PREFIX}${original_url}`;
+                        response = await fetch(url, options);
+                        if (!response.ok) throw new Error(`Proxy/API error: ${response.status}`);
+                        textData = await response.text();
+                        data = JSON.parse(textData);
                         if (!data.data || !data.data[0] || !data.data[0].lastPrice) throw new Error("Neplatná odpoveď Bitget");
                         price = parseFloat(data.data[0].lastPrice);
                         break;
                     case 'gate-perp-usdt':
                         apiSymbol = symbol.includes('_') ? symbol : symbol.replace('USDT', '_USDT'); /* Formát: BTC_USDT */
-                        url = `${PROXY_URL}https://api.gateio.ws/api/v4/futures/usdt/tickers?contract=${apiSymbol}`;
-                        data = await (await fetch(url, options)).json();
+                        original_url = `https://api.gateio.ws/api/v4/futures/usdt/tickers?contract=${apiSymbol}`;
+                        url = `${PROXY_PREFIX}${original_url}`;
+                        response = await fetch(url, options);
+                        if (!response.ok) throw new Error(`Proxy/API error: ${response.status}`);
+                        textData = await response.text();
+                        data = JSON.parse(textData);
                         if (!data[0] || !data[0].last) throw new Error("Neplatná odpoveď Gate.io Perp");
                         price = parseFloat(data[0].last);
                         break;
@@ -1225,51 +1258,79 @@
                     /* --- Spot --- */
                     case 'binance-spot':
                         apiSymbol = symbol; /* Formát: BTCUSDT */
-                        url = `${PROXY_URL}https://api.binance.com/api/v3/ticker/price?symbol=${apiSymbol}`;
-                        data = await (await fetch(url, options)).json();
+                        original_url = `https://api.binance.com/api/v3/ticker/price?symbol=${apiSymbol}`;
+                        url = `${PROXY_PREFIX}${original_url}`;
+                        response = await fetch(url, options);
+                        if (!response.ok) throw new Error(`Proxy/API error: ${response.status}`);
+                        textData = await response.text();
+                        data = JSON.parse(textData);
                         if (!data.price) throw new Error("Neplatná odpoveď Binance Spot");
                         price = parseFloat(data.price);
                         break;
                     case 'okx-spot':
                         apiSymbol = symbol.includes('-') ? symbol : `${symbol.replace('USDT', '')}-USDT`; /* Formát: BTC-USDT */
-                        url = `${PROXY_URL}https://www.okx.com/api/v5/market/ticker?instId=${apiSymbol}`;
-                        data = await (await fetch(url, options)).json();
+                        original_url = `https://www.okx.com/api/v5/market/ticker?instId=${apiSymbol}`;
+                        url = `${PROXY_PREFIX}${original_url}`;
+                        response = await fetch(url, options);
+                        if (!response.ok) throw new Error(`Proxy/API error: ${response.status}`);
+                        textData = await response.text();
+                        data = JSON.parse(textData);
                         if (!data.data || !data.data[0] || !data.data[0].last) throw new Error("Neplatná odpoveď OKX Spot");
                         price = parseFloat(data.data[0].last);
                         break;
                     case 'kucoin-spot':
                         apiSymbol = symbol.includes('-') ? symbol : `${symbol.replace('USDT', '')}-USDT`; /* Formát: BTC-USDT */
-                        url = `${PROXY_URL}https://api.kucoin.com/api/v1/market/orderbook/level1?symbol=${apiSymbol}`;
-                        data = await (await fetch(url, options)).json();
+                        original_url = `https://api.kucoin.com/api/v1/market/orderbook/level1?symbol=${apiSymbol}`;
+                        url = `${PROXY_PREFIX}${original_url}`;
+                        response = await fetch(url, options);
+                        if (!response.ok) throw new Error(`Proxy/API error: ${response.status}`);
+                        textData = await response.text();
+                        data = JSON.parse(textData);
                         if (!data.data || !data.data.price) throw new Error("Neplatná odpoveď KuCoin Spot");
                         price = parseFloat(data.data.price);
                         break;
                     case 'bybit-spot':
                         apiSymbol = symbol; /* Formát: BTCUSDT */
-                        url = `${PROXY_URL}https://api.bybit.com/v5/market/tickers?category=spot&symbol=${apiSymbol}`;
-                        data = await (await fetch(url, options)).json();
+                        original_url = `https://api.bybit.com/v5/market/tickers?category=spot&symbol=${apiSymbol}`;
+                        url = `${PROXY_PREFIX}${original_url}`;
+                        response = await fetch(url, options);
+                        if (!response.ok) throw new Error(`Proxy/API error: ${response.status}`);
+                        textData = await response.text();
+                        data = JSON.parse(textData);
                         if (!data.result || !data.result.list || !data.result.list[0]) throw new Error("Neplatná odpoveď Bybit Spot");
                         price = parseFloat(data.result.list[0].lastPrice);
                         break;
                     case 'mexc-spot':
                         apiSymbol = symbol; /* Formát: BTCUSDT */
-                        url = `${PROXY_URL}https://api.mexc.com/api/v3/ticker/price?symbol=${apiSymbol}`;
-                        data = await (await fetch(url, options)).json();
+                        original_url = `https://api.mexc.com/api/v3/ticker/price?symbol=${apiSymbol}`; // OPRAVA PREKLEPU (httpsV://)
+                        url = `${PROXY_PREFIX}${original_url}`;
+                        response = await fetch(url, options);
+                        if (!response.ok) throw new Error(`Proxy/API error: ${response.status}`);
+                        textData = await response.text();
+                        data = JSON.parse(textData);
                         if (!data.price) throw new Error("Neplatná odpoveď MEXC Spot");
                         price = parseFloat(data.price);
                         break;
                     case 'gate-spot':
                         apiSymbol = symbol.includes('_') ? symbol : symbol.replace('USDT', '_USDT'); /* Formát: BTC_USDT */
-                        url = `${PROXY_URL}https://api.gateio.ws/api/v4/spot/tickers?currency_pair=${apiSymbol}`;
-                        data = await (await fetch(url, options)).json();
+                        original_url = `https://api.gateio.ws/api/v4/spot/tickers?currency_pair=${apiSymbol}`;
+                        url = `${PROXY_PREFIX}${original_url}`;
+                        response = await fetch(url, options);
+                        if (!response.ok) throw new Error(`Proxy/API error: ${response.status}`);
+                        textData = await response.text();
+                        data = JSON.parse(textData);
                         if (!data[0] || !data[0].last) throw new Error("Neplatná odpoveď Gate.io Spot");
                         price = parseFloat(data[0].last);
                         break;
                     case 'bitfinex-spot':
                         apiSymbol = symbol.replace('USDT', 'UST'); /* Formát: tBTCUST */
                         if (!apiSymbol.startsWith('t')) apiSymbol = `t${apiSymbol}`;
-                        url = `${PROXY_URL}https://api-pub.bitfinex.com/v2/ticker/${apiSymbol}`;
-                        data = await (await fetch(url, options)).json();
+                        original_url = `https://api-pub.bitfinex.com/v2/ticker/${apiSymbol}`;
+                        url = `${PROXY_PREFIX}${original_url}`;
+                        response = await fetch(url, options);
+                        if (!response.ok) throw new Error(`Proxy/API error: ${response.status}`);
+                        textData = await response.text();
+                        data = JSON.parse(textData);
                         if (Array.isArray(data) && data[0] === 'error') throw new Error(`Bitfinex API chyba: ${data[2]}`);
                         if (!Array.isArray(data) || !data[6]) throw new Error("Neplatná odpoveď Bitfinex");
                         price = parseFloat(data[6]); /* [6] je LAST_PRICE */
@@ -1277,8 +1338,12 @@
                     case 'kraken-spot':
                         apiSymbol = symbol; /* Formát: XBTUSDT */
                         if (apiSymbol === 'BTCUSDT') apiSymbol = 'XBTUSDT';
-                        url = `${PROXY_URL}https://api.kraken.com/0/public/Ticker?pair=${apiSymbol}`;
-                        data = await (await fetch(url, options)).json();
+                        original_url = `https://api.kraken.com/0/public/Ticker?pair=${apiSymbol}`;
+                        url = `${PROXY_PREFIX}${original_url}`;
+                        response = await fetch(url, options);
+                        if (!response.ok) throw new Error(`Proxy/API error: ${response.status}`);
+                        textData = await response.text();
+                        data = JSON.parse(textData);
                         if (data.error && data.error.length > 0) throw new Error(`Kraken API chyba: ${data.error[0]}`);
                         /* Dynamické hľadanie kľúča v odpovedi */
                         const resultKey = Object.keys(data.result || {})[0];
@@ -1287,24 +1352,35 @@
                         break;
                     case 'huobi-spot':
                         apiSymbol = symbol.toLowerCase(); /* Formát: btcusdt */
-                        url = `${PROXY_URL}https://api.huobi.pro/market/detail/merged?symbol=${apiSymbol}`;
-                        data = await (await fetch(url, options)).json();
+                        original_url = `https://api.huobi.pro/market/detail/merged?symbol=${apiSymbol}`;
+                        url = `${PROXY_PREFIX}${original_url}`;
+                        response = await fetch(url, options);
+                        if (!response.ok) throw new Error(`Proxy/API error: ${response.status}`);
+                        textData = await response.text();
+                        data = JSON.parse(textData);
                         if (data.status === 'error') throw new Error(`Huobi API chyba: ${data['err-msg']}`);
                         if (!data.tick || !data.tick.close) throw new Error("Neplatná odpoveď Huobi");
                         price = parseFloat(data.tick.close);
                         break;
                     case 'bitstamp-spot':
                         apiSymbol = symbol.toLowerCase(); /* Formát: btcusdt */
-                        url = `${PROXY_URL}https://www.bitstamp.net/api/v2/ticker/${apiSymbol}/`;
-                        data = await (await fetch(url, options)).json();
+                        original_url = `https://www.bitstamp.net/api/v2/ticker/${apiSymbol}/`;
+                        url = `${PROXY_PREFIX}${original_url}`;
+                        response = await fetch(url, options);
+                        if (!response.ok) throw new Error(`Proxy/API error: ${response.status}`);
+                        textData = await response.text();
+                        data = JSON.parse(textData);
                         if (!data.last) throw new Error("Neplatná odpoveď Bitstamp");
                         price = parseFloat(data.last);
                         break;
                     case 'coinbase-spot':
                         apiSymbol = symbol.includes('-') ? symbol : `${symbol.replace('USD', '')}-USD`; /* Formát: BTC-USD */
-                        // OPRAVA PREKLEPU: 'httpss://' zmenené na 'https://'
-                        url = `${PROXY_URL}https://api.coinbase.com/v2/prices/${apiSymbol}/spot`;
-                        data = await (await fetch(url, options)).json();
+                        original_url = `https://api.coinbase.com/v2/prices/${apiSymbol}/spot`;
+                        url = `${PROXY_PREFIX}${original_url}`;
+                        response = await fetch(url, options);
+                        if (!response.ok) throw new Error(`Proxy/API error: ${response.status}`);
+                        textData = await response.text();
+                        data = JSON.parse(textData);
                         if (!data.data || !data.data.amount) throw new Error("Neplatná odpoveď Coinbase");
                         price = parseFloat(data.data.amount);
                         break;
@@ -1326,7 +1402,12 @@
                 if (error.name === 'AbortError') {
                     throw new Error("Timeout: API neodpovedalo včas.");
                 }
-                console.error(`Chyba pri načítaní ceny z ${source} (${url}):`, error);
+                // Pridanie lepšieho logovania chýb
+                console.error(`Chyba pri načítaní ceny z ${source} (${original_url || url}):`, error);
+                // Ak bola chyba parsovania, zaloguj text
+                if (error instanceof SyntaxError) {
+                     console.error("Chybný text (nebol JSON):", textData);
+                }
                 throw error; /* Poslať chybu ďalej */
             }
         }
