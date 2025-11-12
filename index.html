@@ -292,11 +292,11 @@
 <body class="h-full p-4 md:p-8 bg-gray-900 text-gray-200">
 
     <div class="max-w-7xl mx-auto">
-        <!-- Hlavný grid: ZMENA ROZLOŽENIA (2/5 Graf | 1/5 Obľúbené | 2/5 Nastavenia) -->
+        <!-- Hlavný grid: ZMENA ROZLOŽENIA (5/12 Graf | 3/12 Obľúbené | 4/12 Nastavenia) -->
         <div class="flex flex-col md:flex-row md:space-x-8">
 
-            <!-- 1. Stĺpec: Vertikálny graf (OPRAVA ŠÍRKY: 2/5) -->
-            <div class="md:w-2/5 mb-6 md:mb-0">
+            <!-- 1. Stĺpec: Vertikálny graf (OPRAVA ŠÍRKY: 5/12) -->
+            <div class="md:w-5/12 mb-6 md:mb-0">
                 <div class="bg-gray-800 shadow-xl rounded-lg p-4 sticky top-8">
                     <!-- Hlavička grafu - UPRAVENÁ v10.14 -->
                     <div class="flex justify-between items-center mb-4">
@@ -372,8 +372,8 @@
                 </div>
             </div>
 
-            <!-- 2. Stĺpec: NOVÝ OBĽÚBENÉ (1/5) -->
-            <div class="md:w-1/5 mb-6 md:mb-0">
+            <!-- 2. Stĺpec: NOVÝ OBĽÚBENÉ (3/12) -->
+            <div class="md:w-3/12 mb-6 md:mb-0">
                 <div class="bg-gray-800 shadow-xl rounded-lg p-4 sticky top-8">
                       <h2 class="text-xl font-bold text-white mb-4">Obľúbené</h2>
                       <!-- Pridanie coinu -->
@@ -394,8 +394,8 @@
                 </div>
             </div>
 
-            <!-- 3. Stĺpec: Nastavenia (OPRAVA ŠÍRKY: 2/5) -->
-            <div class="md:w-2/5">
+            <!-- 3. Stĺpec: Nastavenia (OPRAVA ŠÍRKY: 4/12) -->
+            <div class="md:w-4/12">
                 <div class="bg-gray-800 shadow-xl rounded-lg p-6">
                     <h2 class="text-2xl font-bold text-white mb-6">Nastavenia</h2>
 
@@ -454,38 +454,48 @@
                         </div>
                     </div>
 
-                    <!-- Riadok 4: Tlačidlo Uložiť A PREPÍNAČE -->
-                    <div class="flex flex-col sm:flex-row items-center justify-between sm:space-x-4">
-                        <button id="save-button" class="w-full sm:w-auto flex-grow bg-green-600 text-white py-3 px-6 rounded-md text-lg font-semibold hover:bg-green-700 transition duration-150 shadow-lg mb-4 sm:mb-0">
+                    <!-- Riadok 4: Tlačidlo Uložiť (Oddelené) -->
+                    <div class="mb-6">
+                        <button id="save-button" class="w-full bg-green-600 text-white py-3 px-6 rounded-md text-lg font-semibold hover:bg-green-700 transition duration-150 shadow-lg">
                             Uložiť Hranice
                         </button>
+                    </div>
+                    
+                    <!-- Riadok 5: Prepínače Alarmov (NOVÉ PREHĽADNÉ ROZLOŽENIE) -->
+                    <div class="space-y-5">
                         
-                        <!-- Kontajnery pre prepínače (UPRAVENÉ v10.17) -->
-                        <div class="flex items-center justify-center space-x-4 sm:space-x-6">
-                            <!-- NOVÉ: Prepínač Hlavný Alarm -->
-                            <div class="flex flex-col items-center">
-                                <label for="master-alarm-toggle" class="block text-sm font-medium text-red-400 mb-2 whitespace-nowrap">VŠETKY ALARMY</label>
-                                <button type="button" id="master-alarm-toggle" class="toggle-bg toggled" role="switch" aria-checked="true">
-                                    <span class="sr-only">Všetky Alarmy</span>
-                                    <span aria-hidden="true" class="toggle-dot"></span>
-                                </button>
+                        <!-- Riadok 5.1: Master Alarm -->
+                        <div class="flex items-center justify-between rounded-lg bg-gray-700/50 p-4 border border-gray-600">
+                            <div>
+                                <label for="master-alarm-toggle" class="block text-sm font-semibold text-red-400 whitespace-nowrap">VŠETKY ALARMY</label>
+                                <span class="text-xs text-gray-400">Hlavný vypínač pre celú aplikáciu</span>
                             </div>
+                            <button type="button" id="master-alarm-toggle" class="toggle-bg toggled" role="switch" aria-checked="true">
+                                <span class="sr-only">Všetky Alarmy</span>
+                                <span aria-hidden="true" class="toggle-dot"></span>
+                            </button>
+                        </div>
 
-                            <!-- Prepínač Alarm Aktívny (pre coin) -->
-                            <div class="flex flex-col items-center">
-                                <label for="alarm-enabled-toggle" class="block text-sm font-medium text-gray-300 mb-2 whitespace-nowrap">Alarm Aktívny</label>
-                                <button type="button" id="alarm-enabled-toggle" class="toggle-bg toggled" role="switch" aria-checked="true">
-                                    <span class="sr-only">Alarm Aktívny</span>
-                                    <span aria-hidden="true" class="toggle-dot"></span>
-                                </button>
-                            </div>
-                             <!-- Prepínač Zvuk Alarmu (Mute) (pre coin) -->
-                            <div class="flex flex-col items-center">
-                                <label for="alarm-sound-toggle" class="block text-sm font-medium text-gray-300 mb-2 whitespace-nowrap">Zvuk Alarmu</label>
-                                <button type="button" id="alarm-sound-toggle" class="toggle-bg toggled" role="switch" aria-checked="true">
-                                    <span class="sr-only">Zvuk Alarmu</span>
-                                    <span aria-hidden="true" class="toggle-dot"></span>
-                                </button>
+                        <!-- Riadok 5.2: Alarmy pre Coin -->
+                        <div class="rounded-lg bg-gray-700/50 p-4 border border-gray-600">
+                            <h4 class="text-sm font-semibold text-gray-200 mb-4">Nastavenia pre aktuálny coin</h4>
+                            <div class="space-y-4">
+                                <!-- Alarm Aktívny -->
+                                <div class="flex items-center justify-between">
+                                    <label for="alarm-enabled-toggle" class="block text-sm font-medium text-gray-300 whitespace-nowrap">Alarm Aktívny</label>
+                                    <button type="button" id="alarm-enabled-toggle" class="toggle-bg toggled" role="switch" aria-checked="true">
+                                        <span class="sr-only">Alarm Aktívny</span>
+                                        <span aria-hidden="true" class="toggle-dot"></span>
+                                    </button>
+                                </div>
+                                <!-- Zvuk Alarmu -->
+                                <div class="flex items-center justify-between">
+                                    <label for="alarm-sound-toggle" class="block text-sm font-medium text-gray-300 whitespace-nowrap">Zvuk Alarmu</label>
+                                    <button type="button" id="alarm-sound-toggle" class="toggle-bg toggled" role="switch" aria-checked="true">
+                                        <span class="sr-only">Zvuk Alarmu</span>
+                                        <span aria-hidden="true" class="toggle-dot"></span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1153,34 +1163,38 @@
             const timeoutId = setTimeout(() => controller.abort(), 8000); /* 8 sekundový timeout */
             const options = { signal: controller.signal };
 
+            // OPRAVA: Tretí pokus o proxy server na obídenie CORS chýb (Failed to fetch)
+            // Použijeme https://api.codetabs.com/v1/proxy?quest=
+            const PROXY_URL = 'https://api.codetabs.com/v1/proxy?quest=';
+
             try {
                 let data;
                 switch (source) {
                     /* --- Perp / Swapy --- */
                     case 'bybit-perp-linear':
                         apiSymbol = symbol; /* Formát: BTCUSDT */
-                        url = `https://api.bybit.com/v5/market/tickers?category=linear&symbol=${apiSymbol}`;
+                        url = `${PROXY_URL}https://api.bybit.com/v5/market/tickers?category=linear&symbol=${apiSymbol}`;
                         data = await (await fetch(url, options)).json();
                         if (!data.result || !data.result.list || !data.result.list[0]) throw new Error("Neplatná odpoveď Bybit Perp Linear");
                         price = parseFloat(data.result.list[0].lastPrice);
                         break;
                     case 'bybit-perp-inverse':
                         apiSymbol = symbol.endsWith('USD') ? symbol : `${symbol}USD`; /* Formát: BTCUSD */
-                        url = `https://api.bybit.com/v5/market/tickers?category=inverse&symbol=${apiSymbol}`;
+                        url = `${PROXY_URL}https://api.bybit.com/v5/market/tickers?category=inverse&symbol=${apiSymbol}`;
                         data = await (await fetch(url, options)).json();
                         if (!data.result || !data.result.list || !data.result.list[0]) throw new Error("Neplatná odpoveď Bybit Perp Inverse");
                         price = parseFloat(data.result.list[0].lastPrice);
                         break;
                     case 'okx-swap':
                         apiSymbol = symbol.includes('-') ? symbol : `${symbol.replace('USDT', '')}-USDT-SWAP`; /* Formát: BTC-USDT-SWAP */
-                        url = `https://www.okx.com/api/v5/market/ticker?instId=${apiSymbol}`;
+                        url = `${PROXY_URL}https://www.okx.com/api/v5/market/ticker?instId=${apiSymbol}`;
                         data = await (await fetch(url, options)).json();
                         if (!data.data || !data.data[0] || !data.data[0].last) throw new Error("Neplatná odpoveď OKX SWAP");
                         price = parseFloat(data.data[0].last);
                         break;
                     case 'deribit-perp':
                         apiSymbol = symbol.includes('-') ? symbol : `${symbol.replace('USD', '')}-PERPETUAL`; /* Formát: BTC-PERPETUAL */
-                        url = `https://www.deribit.com/api/v2/public/ticker?instrument_name=${apiSymbol}`;
+                        url = `${PROXY_URL}https://www.deribit.com/api/v2/public/ticker?instrument_name=${apiSymbol}`;
                         data = await (await fetch(url, options)).json();
                         if (!data.result || !data.result.last_price) throw new Error("Neplatná odpoveď Deribit");
                         price = parseFloat(data.result.last_price);
@@ -1188,21 +1202,21 @@
                     case 'bitmex-perp':
                         apiSymbol = symbol.replace('USDT', 'USD'); /* Formát: XBTUSD */
                         if (apiSymbol === 'BTCUSD') apiSymbol = 'XBTUSD';
-                        url = `https://www.bitmex.com/api/v1/instrument?symbol=${apiSymbol}`;
+                        url = `${PROXY_URL}https://www.bitmex.com/api/v1/instrument?symbol=${apiSymbol}`;
                         data = await (await fetch(url, options)).json();
                         if (!data[0] || !data[0].lastPrice) throw new Error("Neplatná odpoveď BitMEX");
                         price = parseFloat(data[0].lastPrice);
                         break;
                     case 'bitget-perp':
                         apiSymbol = symbol; /* Formát: BTCUSDT */
-                        url = `https://api.bitget.com/api/v2/mix/market/ticker?productType=usdt-futures&symbol=${apiSymbol}`;
+                        url = `${PROXY_URL}https://api.bitget.com/api/v2/mix/market/ticker?productType=usdt-futures&symbol=${apiSymbol}`;
                         data = await (await fetch(url, options)).json();
                         if (!data.data || !data.data[0] || !data.data[0].lastPrice) throw new Error("Neplatná odpoveď Bitget");
                         price = parseFloat(data.data[0].lastPrice);
                         break;
                     case 'gate-perp-usdt':
                         apiSymbol = symbol.includes('_') ? symbol : symbol.replace('USDT', '_USDT'); /* Formát: BTC_USDT */
-                        url = `https://api.gateio.ws/api/v4/futures/usdt/tickers?contract=${apiSymbol}`;
+                        url = `${PROXY_URL}https://api.gateio.ws/api/v4/futures/usdt/tickers?contract=${apiSymbol}`;
                         data = await (await fetch(url, options)).json();
                         if (!data[0] || !data[0].last) throw new Error("Neplatná odpoveď Gate.io Perp");
                         price = parseFloat(data[0].last);
@@ -1211,42 +1225,42 @@
                     /* --- Spot --- */
                     case 'binance-spot':
                         apiSymbol = symbol; /* Formát: BTCUSDT */
-                        url = `https://api.binance.com/api/v3/ticker/price?symbol=${apiSymbol}`;
+                        url = `${PROXY_URL}https://api.binance.com/api/v3/ticker/price?symbol=${apiSymbol}`;
                         data = await (await fetch(url, options)).json();
                         if (!data.price) throw new Error("Neplatná odpoveď Binance Spot");
                         price = parseFloat(data.price);
                         break;
                     case 'okx-spot':
                         apiSymbol = symbol.includes('-') ? symbol : `${symbol.replace('USDT', '')}-USDT`; /* Formát: BTC-USDT */
-                        url = `https://www.okx.com/api/v5/market/ticker?instId=${apiSymbol}`;
+                        url = `${PROXY_URL}https://www.okx.com/api/v5/market/ticker?instId=${apiSymbol}`;
                         data = await (await fetch(url, options)).json();
                         if (!data.data || !data.data[0] || !data.data[0].last) throw new Error("Neplatná odpoveď OKX Spot");
                         price = parseFloat(data.data[0].last);
                         break;
                     case 'kucoin-spot':
                         apiSymbol = symbol.includes('-') ? symbol : `${symbol.replace('USDT', '')}-USDT`; /* Formát: BTC-USDT */
-                        url = `https://api.kucoin.com/api/v1/market/orderbook/level1?symbol=${apiSymbol}`;
+                        url = `${PROXY_URL}https://api.kucoin.com/api/v1/market/orderbook/level1?symbol=${apiSymbol}`;
                         data = await (await fetch(url, options)).json();
                         if (!data.data || !data.data.price) throw new Error("Neplatná odpoveď KuCoin Spot");
                         price = parseFloat(data.data.price);
                         break;
                     case 'bybit-spot':
                         apiSymbol = symbol; /* Formát: BTCUSDT */
-                        url = `https://api.bybit.com/v5/market/tickers?category=spot&symbol=${apiSymbol}`;
+                        url = `${PROXY_URL}https://api.bybit.com/v5/market/tickers?category=spot&symbol=${apiSymbol}`;
                         data = await (await fetch(url, options)).json();
                         if (!data.result || !data.result.list || !data.result.list[0]) throw new Error("Neplatná odpoveď Bybit Spot");
                         price = parseFloat(data.result.list[0].lastPrice);
                         break;
                     case 'mexc-spot':
                         apiSymbol = symbol; /* Formát: BTCUSDT */
-                        url = `https://api.mexc.com/api/v3/ticker/price?symbol=${apiSymbol}`;
+                        url = `${PROXY_URL}https://api.mexc.com/api/v3/ticker/price?symbol=${apiSymbol}`;
                         data = await (await fetch(url, options)).json();
                         if (!data.price) throw new Error("Neplatná odpoveď MEXC Spot");
                         price = parseFloat(data.price);
                         break;
                     case 'gate-spot':
                         apiSymbol = symbol.includes('_') ? symbol : symbol.replace('USDT', '_USDT'); /* Formát: BTC_USDT */
-                        url = `https://api.gateio.ws/api/v4/spot/tickers?currency_pair=${apiSymbol}`;
+                        url = `${PROXY_URL}https://api.gateio.ws/api/v4/spot/tickers?currency_pair=${apiSymbol}`;
                         data = await (await fetch(url, options)).json();
                         if (!data[0] || !data[0].last) throw new Error("Neplatná odpoveď Gate.io Spot");
                         price = parseFloat(data[0].last);
@@ -1254,7 +1268,7 @@
                     case 'bitfinex-spot':
                         apiSymbol = symbol.replace('USDT', 'UST'); /* Formát: tBTCUST */
                         if (!apiSymbol.startsWith('t')) apiSymbol = `t${apiSymbol}`;
-                        url = `https://api-pub.bitfinex.com/v2/ticker/${apiSymbol}`;
+                        url = `${PROXY_URL}https://api-pub.bitfinex.com/v2/ticker/${apiSymbol}`;
                         data = await (await fetch(url, options)).json();
                         if (Array.isArray(data) && data[0] === 'error') throw new Error(`Bitfinex API chyba: ${data[2]}`);
                         if (!Array.isArray(data) || !data[6]) throw new Error("Neplatná odpoveď Bitfinex");
@@ -1263,7 +1277,7 @@
                     case 'kraken-spot':
                         apiSymbol = symbol; /* Formát: XBTUSDT */
                         if (apiSymbol === 'BTCUSDT') apiSymbol = 'XBTUSDT';
-                        url = `https://api.kraken.com/0/public/Ticker?pair=${apiSymbol}`;
+                        url = `${PROXY_URL}https://api.kraken.com/0/public/Ticker?pair=${apiSymbol}`;
                         data = await (await fetch(url, options)).json();
                         if (data.error && data.error.length > 0) throw new Error(`Kraken API chyba: ${data.error[0]}`);
                         /* Dynamické hľadanie kľúča v odpovedi */
@@ -1273,7 +1287,7 @@
                         break;
                     case 'huobi-spot':
                         apiSymbol = symbol.toLowerCase(); /* Formát: btcusdt */
-                        url = `https://api.huobi.pro/market/detail/merged?symbol=${apiSymbol}`;
+                        url = `${PROXY_URL}https://api.huobi.pro/market/detail/merged?symbol=${apiSymbol}`;
                         data = await (await fetch(url, options)).json();
                         if (data.status === 'error') throw new Error(`Huobi API chyba: ${data['err-msg']}`);
                         if (!data.tick || !data.tick.close) throw new Error("Neplatná odpoveď Huobi");
@@ -1281,14 +1295,15 @@
                         break;
                     case 'bitstamp-spot':
                         apiSymbol = symbol.toLowerCase(); /* Formát: btcusdt */
-                        url = `https://www.bitstamp.net/api/v2/ticker/${apiSymbol}/`;
+                        url = `${PROXY_URL}https://www.bitstamp.net/api/v2/ticker/${apiSymbol}/`;
                         data = await (await fetch(url, options)).json();
                         if (!data.last) throw new Error("Neplatná odpoveď Bitstamp");
                         price = parseFloat(data.last);
                         break;
                     case 'coinbase-spot':
                         apiSymbol = symbol.includes('-') ? symbol : `${symbol.replace('USD', '')}-USD`; /* Formát: BTC-USD */
-                        url = `https://api.coinbase.com/v2/prices/${apiSymbol}/spot`;
+                        // OPRAVA PREKLEPU: 'httpss://' zmenené na 'https://'
+                        url = `${PROXY_URL}https://api.coinbase.com/v2/prices/${apiSymbol}/spot`;
                         data = await (await fetch(url, options)).json();
                         if (!data.data || !data.data.amount) throw new Error("Neplatná odpoveď Coinbase");
                         price = parseFloat(data.data.amount);
