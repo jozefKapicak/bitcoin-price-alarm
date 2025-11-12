@@ -298,12 +298,41 @@
             <!-- 1. Stĺpec: Vertikálny graf (OPRAVA ŠÍRKY: 2/5) -->
             <div class="md:w-2/5 mb-6 md:mb-0">
                 <div class="bg-gray-800 shadow-xl rounded-lg p-4 sticky top-8">
-                    <!-- Hlavička grafu - ZJEDNODUŠENÁ -->
+                    <!-- Hlavička grafu - UPRAVENÁ v10.14 -->
                     <div class="flex justify-between items-center mb-4">
+                        
+                        <!-- 1. Vľavo: Názov -->
                         <div class="flex items-center space-x-2">
                            <h2 class="text-xl font-bold text-white">Cenová Os</h2>
-                            <!-- TLAČIDLÁ BOLI PRESUNUTÉ NIŽŠIE -->
                         </div>
+
+                        <!-- 2. V strede: Tlačidlá (PRESNUTÉ SEM) -->
+                        <div class="flex items-center justify-center space-x-4">
+                            <!-- Tlačidlo Recentrovať -->
+                            <button id="recenter-button" 
+                                    class="flex items-center space-x-1.5 py-1.5 px-3 bg-blue-600/20 text-blue-300 rounded-md hover:bg-blue-600/40 hover:text-blue-200 transition-all duration-150" 
+                                    title="Recentrovať graf (zobraziť uložené hranice)">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                  <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7V9a1 1 0 01-2 0V3a1 1 0 011-1zm.004 10a1 1 0 011.885-.666A5.002 5.002 0 0014.001 13V11a1 1 0 112 0v6a1 1 0 01-1 1h-6a1 1 0 110-2h2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.004-1.334z" clip-rule="evenodd" />
+                                </svg>
+                                <span class="text-xs font-medium">Recentrovať</span>
+                            </button>
+                            
+                            <!-- Tlačidlo Hard Reset -->
+                            <button id="hard-reset-button" 
+                                    class="flex items-center space-x-1.5 py-1.5 px-3 bg-yellow-600/20 text-yellow-300 rounded-md hover:bg-yellow-600/40 hover:text-yellow-200 transition-all duration-150" 
+                                    title="Hard Reset: Vypočítať a uložiť nové 0.1% hranice">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+                                    <path fill-rule="evenodd" d="M9 10a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0v-1.5A.75.75 0 0 1 9 10Z" clip-rule="evenodd" />
+                                    <path fill-rule="evenodd" d="M8.25 10a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 0 1.5h-1.5A.75.75 0 0 1 8.25 10Z" clip-rule="evenodd" />
+                                    <path fill-rule="evenodd" d="M9 10a.75.75 0 0 1 .75-.75h.01a.75.75 0 0 1 .75.75v.01a.75.75 0 0 1-.75.75h-.01A.75.75 0 0 1 9 10Z" clip-rule="evenodd" />
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm-5.75-8a.75.75 0 0 0 0 1.5h.01a.75.75 0 0 0 0-1.5h-.01ZM10 4.25a.75.75 0 0 1 .75.75v.01a.75.75 0 0 1-1.5 0v-.01a.75.75 0 0 1 .75-.75ZM10 15.75a.75.75 0 0 1 .75-.75v-.01a.75.75 0 0 1-1.5 0v.01a.75.75 0 0 1 .75.75ZM15.75 10a.75.75 0 0 0 0-1.5h-.01a.75.75 0 0 0 0 1.5h.01Z" clip-rule="evenodd" />
+                                </svg>
+                                <span class="text-xs font-medium">Reset 0.1%</span>
+                            </button>
+                        </div>
+
+                        <!-- 3. Vpravo: Status -->
                         <div class="flex items-center space-x-2">
                             <!-- Countdown Timer -->
                             <span id="countdown-timer" class="text-xs text-gray-400 font-mono">--s</span>
@@ -312,32 +341,8 @@
                         </div>
                     </div>
 
-                    <!-- NOVÁ SEKCIA: Ovládacie Tlačidlá Grafu -->
-                    <div class="flex items-center justify-center space-x-4 mb-4">
-                        <!-- Tlačidlo Recentrovať -->
-                        <button id="recenter-button" 
-                                class="flex items-center space-x-1.5 py-1.5 px-3 bg-blue-600/20 text-blue-300 rounded-md hover:bg-blue-600/40 hover:text-blue-200 transition-all duration-150" 
-                                title="Recentrovať graf (zobraziť uložené hranice)">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                              <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7V9a1 1 0 01-2 0V3a1 1 0 011-1zm.004 10a1 1 0 011.885-.666A5.002 5.002 0 0014.001 13V11a1 1 0 112 0v6a1 1 0 01-1 1h-6a1 1 0 110-2h2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.004-1.334z" clip-rule="evenodd" />
-                            </svg>
-                            <span class="text-xs font-medium">Recentrovať</span>
-                        </button>
-                        
-                        <!-- Tlačidlo Hard Reset -->
-                        <button id="hard-reset-button" 
-                                class="flex items-center space-x-1.5 py-1.5 px-3 bg-yellow-600/20 text-yellow-300 rounded-md hover:bg-yellow-600/40 hover:text-yellow-200 transition-all duration-150" 
-                                title="Hard Reset: Vypočítať a uložiť nové 0.1% hranice">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
-                                <path fill-rule="evenodd" d="M9 10a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0v-1.5A.75.75 0 0 1 9 10Z" clip-rule="evenodd" />
-                                <path fill-rule="evenodd" d="M8.25 10a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 0 1.5h-1.5A.75.75 0 0 1 8.25 10Z" clip-rule="evenodd" />
-                                <path fill-rule="evenodd" d="M9 10a.75.75 0 0 1 .75-.75h.01a.75.75 0 0 1 .75.75v.01a.75.75 0 0 1-.75.75h-.01A.75.75 0 0 1 9 10Z" clip-rule="evenodd" />
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm-5.75-8a.75.75 0 0 0 0 1.5h.01a.75.75 0 0 0 0-1.5h-.01ZM10 4.25a.75.75 0 0 1 .75.75v.01a.75.75 0 0 1-1.5 0v-.01a.75.75 0 0 1 .75-.75ZM10 15.75a.75.75 0 0 1 .75-.75v-.01a.75.75 0 0 1-1.5 0v.01a.75.75 0 0 1 .75.75ZM15.75 10a.75.75 0 0 0 0-1.5h-.01a.75.75 0 0 0 0 1.5h.01Z" clip-rule="evenodd" />
-                            </svg>
-                            <span class="text-xs font-medium">Reset 0.1%</span>
-                        </button>
-                    </div>
-
+                    <!-- NOVÁ SEKCIA: Ovládacie Tlačidlá Grafu (TÁTO SEKCIA BOLA ODSTRÁNENÁ) -->
+                    
                     <!-- Vertikálna os -->
                     <div id="price-axis-wrapper" class="price-axis-container">
                         <!-- Sivé orientačné čiary (grid) -->
@@ -521,10 +526,10 @@
         let currentIntervalSeconds = 10; 
         let secondsRemaining = 10; 
         
-        /* --- ZMENA: Rozdelenie nastavení --- */
+        /* --- ZMENA v10.15: Prepínače alarmu sú preč z globálnych --- */
         let globalSettings = {
-            isAlarmSystemEnabled: true,
-            isAlarmSoundEnabled: true,
+            /* isAlarmSystemEnabled: true, */ /* PRESUNUTÉ */
+            /* isAlarmSoundEnabled: true, */ /* PRESUNUTÉ */
             apiSource: 'bybit-perp-linear',
             intervalSeconds: 10
         };
@@ -670,10 +675,9 @@
         
         /* Načíta globálne nastavenia (API, Interval, Obľúbené...) */
         /* OPRAVA v10.1: Zmenená logika načítania, aby zodpovedala plochej štruktúre DB */
+        /* OPRAVA v10.15: Zjednodušené, prepínače sú preč */
         function loadGlobalSettings(settings = {}) {
             /* 1. Načítaj globálne nastavenia */
-            globalSettings.isAlarmSystemEnabled = (settings.isAlarmSystemEnabled === false) ? false : true;
-            globalSettings.isAlarmSoundEnabled = (settings.isAlarmSoundEnabled === false) ? false : true;
             globalSettings.apiSource = settings.apiSource || 'bybit-perp-linear';
             globalSettings.intervalSeconds = settings.intervalSeconds || 10;
             
@@ -696,19 +700,22 @@
             /* 5. Aplikuj nastavenia pre aktívny coin */
             applyCurrentCoinSettings(false);
             
-            /* 6. Aktualizuj UI */
-            updateAlarmSystemStatus(false);
-            updateAlarmSoundStatus(false);
+            /* 6. Aktualizuj UI (prepínače sú preč) */
+            /* updateAlarmSystemStatus(false); */
+            /* updateAlarmSoundStatus(false); */
             renderFavorites();
         }
 
 
         /* NOVÁ FUNKCIA: Aplikuje LOW/HIGH pre zvolený coin */
+        /* UPRAVENÉ v10.15: Aplikuje aj prepínače alarmu */
         function applyCurrentCoinSettings(isNewCoin = false) {
             const symbol = currentCoinSymbol;
             const settings = allCoinSettings[symbol];
 
-            /* OPRAVA: Správne spracovanie prázdnych/nulových hodnôt */
+            let coinSpecificAlarmEnabled = false; // Default: OFF
+            let coinSpecificSoundEnabled = false; // Default: OFF
+
             if (settings) {
                 /* Tento coin má uložené nastavenia */
                 lowThresholdInput.value = formatSkNumber(settings.low || 0);
@@ -719,14 +726,25 @@
                 } else {
                    firstSuccessfulFetch = false; /* Vynúti 0.1% kalkuláciu pri prvej cene */
                 }
+                
+                // NOVÉ v10.15: Načítaj špecifické nastavenia alarmu pre tento coin
+                // Ak je 'undefined', vráti 'undefined'. || false to opraví.
+                coinSpecificAlarmEnabled = settings.isAlarmSystemEnabled || false;
+                coinSpecificSoundEnabled = settings.isAlarmSoundEnabled || false;
+
             } else {
                 /* Tento coin nemá nastavenia (alebo sú neplatné) */
                 lowThresholdInput.value = '';
                 highThresholdInput.value = '';
                 firstSuccessfulFetch = false; /* Vynúti 0.1% kalkuláciu pri prvej cene */
+                // Nový coin, defaulty (false, false) sa použijú
             }
+            
+            // Aktualizuj UI prepínačov na základe hodnôt pre TENTO coin
+            updateAlarmSystemStatus(false, coinSpecificAlarmEnabled);
+            updateAlarmSoundStatus(false, coinSpecificSoundEnabled);
 
-            /* Ak bola zmena coinu vyvolaná klikom (Obľúbené), okamžite reštartuj */
+
             if (isNewCoin) {
                 currentBtcPrice = 0; /* Resetuj cenu */
                 updatePriceAxis(0, 0, 0, false); /* Okamžite vyčisti graf */
@@ -830,8 +848,8 @@
                 apiSource: globalSettings.apiSource,
                 lastUsedCoin: currentCoinSymbol,
                 intervalSeconds: globalSettings.intervalSeconds,
-                isAlarmSystemEnabled: globalSettings.isAlarmSystemEnabled, 
-                isAlarmSoundEnabled: globalSettings.isAlarmSoundEnabled, 
+                /* ODSTRÁNENÉ v10.15: isAlarmSystemEnabled: globalSettings.isAlarmSystemEnabled, */
+                /* ODSTRÁNENÉ v10.15: isAlarmSoundEnabled: globalSettings.isAlarmSoundEnabled, */
                 favorites: favorites,
             };
 
@@ -857,11 +875,21 @@
             /* Nečítaj z 'coinSymbolInput', ktorý je len na pridávanie. */
             const symbolToSave = currentCoinSymbol; 
 
+            // NOVÉ v10.15: Načítaj aktuálny stav prepínačov z cache (bol aktualizovaný kliknutím alebo načítaním)
+            const currentAlarmEnabled = allCoinSettings[symbolToSave]?.isAlarmSystemEnabled || false;
+            const currentSoundEnabled = allCoinSettings[symbolToSave]?.isAlarmSoundEnabled || false;
+
             if (fromDrag) { // e.g. from D&D or selectFavorite
                 /* 2a. Ak je to z D&D alebo selectFavorite, dáta sú platné */
                 const lowVal = Math.max(MIN_PRICE, parseLocaleNumber(lowThresholdInput.value) || 0);
                 const highVal = parseLocaleNumber(highThresholdInput.value) || 0;
-                coinSettingsToSave = { low: lowVal, high: highVal };
+                // Ulož aj prepínače
+                coinSettingsToSave = { 
+                    low: lowVal, 
+                    high: highVal,
+                    isAlarmSystemEnabled: currentAlarmEnabled,
+                    isAlarmSoundEnabled: currentSoundEnabled
+                };
                 allCoinSettings[symbolToSave] = coinSettingsToSave; /* Update cache */
             
             } else { // from "Uložiť Hranice"
@@ -871,18 +899,24 @@
 
                 if (lowVal > MIN_PRICE && highVal > lowVal) {
                     /* Dáta sú platné, ulož ich */
-                    coinSettingsToSave = { low: lowVal, high: highVal };
+                    coinSettingsToSave = { 
+                        low: lowVal, 
+                        high: highVal,
+                        isAlarmSystemEnabled: currentAlarmEnabled,
+                        isAlarmSoundEnabled: currentSoundEnabled
+                    };
                     allCoinSettings[symbolToSave] = coinSettingsToSave; /* Update cache */
                 } else {
                     /* Dáta sú neplatné (0 alebo prázdne), vynúť 0.1% recalc */
                     triggerRecalc = true;
-                    allCoinSettings[symbolToSave] = { low: 0, high: 0 };
-                    coinSettingsToSave = { low: 0, high: 0 }; 
+                    coinSettingsToSave = { 
+                        low: 0, 
+                        high: 0,
+                        isAlarmSystemEnabled: currentAlarmEnabled, // Ulož aj prepínače
+                        isAlarmSoundEnabled: currentSoundEnabled
+                    }; 
+                    allCoinSettings[symbolToSave] = coinSettingsToSave; 
                 }
-                
-                /* OPRAVA v10.3: Presunuté na koniec funkcie.
-                   applyCurrentCoinSettings(true); // true = reštartuj monitorovanie
-                */
             }
 
             /* --- Uloženie 1: Globálne Nastavenia --- */
@@ -890,8 +924,8 @@
                 apiSource: globalSettings.apiSource,
                 lastUsedCoin: symbolToSave, // Ulož správny coin
                 intervalSeconds: globalSettings.intervalSeconds,
-                isAlarmSystemEnabled: globalSettings.isAlarmSystemEnabled, 
-                isAlarmSoundEnabled: globalSettings.isAlarmSoundEnabled, 
+                /* ODSTRÁNENÉ v10.15: isAlarmSystemEnabled: globalSettings.isAlarmSystemEnabled, */
+                /* ODSTRÁNENÉ v10.15: isAlarmSoundEnabled: globalSettings.isAlarmSoundEnabled, */
                 favorites: favorites,
             };
 
@@ -1064,7 +1098,10 @@
 
 
         const alarmLoop = new Tone.Loop(time => {
-            if (isAlarmActive && globalSettings.isAlarmSoundEnabled && alarmSynth) {
+            // NOVÉ v10.15: Získaj stav ZVUKU pre AKTUÁLNY coin
+            const currentCoinSoundEnabled = allCoinSettings[currentCoinSymbol]?.isAlarmSoundEnabled || false;
+
+            if (isAlarmActive && currentCoinSoundEnabled && alarmSynth) {
                 alarmSynth.triggerAttackRelease("C5", "8n", time);
                 alarmSynth.triggerAttackRelease("G4", "8n", time + 0.25);
             }
@@ -1077,6 +1114,10 @@
                     return; 
                 }
                 
+                // NOVÉ v10.15: Kontrola zvuku až tu
+                const currentCoinSoundEnabled = allCoinSettings[currentCoinSymbol]?.isAlarmSoundEnabled || false;
+                if (!currentCoinSoundEnabled) return;
+
                 Tone.Transport.start();
                 alarmLoop.start(0);
             }
@@ -1313,8 +1354,11 @@
                 updatePriceAxis(price, low, high, forceProportionalUpdate); 
                 forceProportionalUpdate = false; /* Resetuj vynútenie */
 
+                // NOVÉ v10.15: Získaj stav alarmu pre AKTUÁLNY coin
+                const currentCoinAlarmEnabled = allCoinSettings[currentCoinSymbol]?.isAlarmSystemEnabled || false;
+
                 /* --- Logika Alarmu (KONTROLA PREPÍNAČA) --- */
-                if (!globalSettings.isAlarmSystemEnabled) {
+                if (!currentCoinAlarmEnabled) { // Použi špecifický stav
                     return; /* Alarm je vypnutý, nič nekontroluj */
                 }
 
@@ -1352,8 +1396,11 @@
         }
         
         function triggerAlarm(message) {
+            // NOVÉ v10.15: Získaj stav alarmu pre AKTUÁLNY coin
+            const currentCoinAlarmEnabled = allCoinSettings[currentCoinSymbol]?.isAlarmSystemEnabled || false;
+
             /* Kontrola prepínača */
-            if (!globalSettings.isAlarmSystemEnabled) return; 
+            if (!currentCoinAlarmEnabled) return; 
             if (isAlarmActive) return; 
             
             isAlarmActive = true;
@@ -1362,7 +1409,11 @@
             alarmMessage.textContent = message;
             alarmModal.classList.remove('hidden');
             
-            playAlarmSound(); 
+            // NOVÉ v10.15: Získaj stav ZVUKU pre AKTUÁLNY coin
+            const currentCoinSoundEnabled = allCoinSettings[currentCoinSymbol]?.isAlarmSoundEnabled || false;
+            if (currentCoinSoundEnabled) {
+                playAlarmSound(); 
+            }
             
             stopMonitoring(false); /* Nezastavuj odpočítavanie */
         }
@@ -1615,6 +1666,7 @@
         }
 
         /* --- Funkcia pre vykreslenie orientačných čiar (verzia 3) --- */
+        /* OPRAVA v10.16: Obnovenie chýbajúceho kódu */
         function updateAxisGrid(p_axisMin, p_axisMax, p_axisRange, mainLabelPercents) {
             gridLinesContainer.innerHTML = '';
             const numLines = 5; /* Počet čiar */
@@ -1651,16 +1703,33 @@
             }
         }
 
-        /* --- Nová funkcia pre prepínač "Alarm Aktívny" (OPRAVENÁ LOGIKA) --- */
-        function updateAlarmSystemStatus(doSave = true) {
-            /* 1. Aktualizuj stav premennej */
-            if(doSave) { 
-                globalSettings.isAlarmSystemEnabled = !globalSettings.isAlarmSystemEnabled;
-                initializeAudio(); 
+        /* --- Nová funkcia pre prepínač "Alarm Aktívny" (OPRAVENÁ LOGIKA v10.15) --- */
+        function updateAlarmSystemStatus(doSave = true, explicitState = null) {
+            let currentState = false; // Predvolený stav
+
+            // Zisti aktuálny stav z cache, ak existuje
+            if (allCoinSettings[currentCoinSymbol]) {
+                currentState = allCoinSettings[currentCoinSymbol].isAlarmSystemEnabled || false;
             }
+
+            let newState;
+            if (explicitState !== null) {
+                // Stav je vynútený (napr. pri načítaní)
+                newState = explicitState;
+            } else {
+                // Stav je prepnutý (kliknutím)
+                newState = !currentState;
+                initializeAudio();
+            }
+
+            // 1. Aktualizuj cache
+            if (!allCoinSettings[currentCoinSymbol]) {
+                allCoinSettings[currentCoinSymbol] = {};
+            }
+            allCoinSettings[currentCoinSymbol].isAlarmSystemEnabled = newState;
             
             /* 2. Aktualizuj vizuál prepínača */
-            if (globalSettings.isAlarmSystemEnabled) {
+            if (newState) {
                 alarmEnabledToggle.classList.add('toggled'); 
                 alarmEnabledToggle.setAttribute('aria-checked', 'true');
             } else {
@@ -1674,21 +1743,38 @@
 
             /* 3. Ulož nastavenie (len ak to bolo volané z kliku) */
             if (doSave) {
-                /* OPRAVA v10.2: Volaj novú funkciu na uloženie */
-                saveGlobalSettingsOnly();
+                // Uloží VŠETKY nastavenia pre coin (vrátane LOW/HIGH)
+                saveSettings(true); // true = fromDrag (uloží, ale nereštartuje monitoring)
             }
         }
         
-        /* --- Nová funkcia pre prepínač "Zvuk Alarmu" (Mute) --- */
-        function updateAlarmSoundStatus(doSave = true) {
-            /* 1. Aktualizuj stav premennej */
-            if(doSave) {
-                globalSettings.isAlarmSoundEnabled = !globalSettings.isAlarmSoundEnabled;
-                initializeAudio(); 
+        /* --- Nová funkcia pre prepínač "Zvuk Alarmu" (Mute) (OPRAVENÁ LOGIKA v10.15) --- */
+        function updateAlarmSoundStatus(doSave = true, explicitState = null) {
+            let currentState = false; // Predvolený stav
+
+            // Zisti aktuálny stav z cache, ak existuje
+            if (allCoinSettings[currentCoinSymbol]) {
+                currentState = allCoinSettings[currentCoinSymbol].isAlarmSoundEnabled || false;
             }
+
+            let newState;
+            if (explicitState !== null) {
+                // Stav je vynútený (napr. pri načítaní)
+                newState = explicitState;
+            } else {
+                // Stav je prepnutý (kliknutím)
+                newState = !currentState;
+                initializeAudio();
+            }
+
+            // 1. Aktualizuj cache
+            if (!allCoinSettings[currentCoinSymbol]) {
+                allCoinSettings[currentCoinSymbol] = {};
+            }
+            allCoinSettings[currentCoinSymbol].isAlarmSoundEnabled = newState;
             
             /* 2. Aktualizuj vizuál prepínača */
-            if (globalSettings.isAlarmSoundEnabled) {
+            if (newState) {
                 alarmSoundToggle.classList.add('toggled'); 
                 alarmSoundToggle.setAttribute('aria-checked', 'true');
             } else {
@@ -1698,8 +1784,8 @@
 
             /* 3. Ulož nastavenie (len ak to bolo volané z kliku) */
             if (doSave) {
-                /* OPRAVA v10.2: Volaj novú funkciu na uloženie */
-                saveGlobalSettingsOnly();
+                // Uloží VŠETKY nastavenia pre coin (vrátane LOW/HIGH)
+                saveSettings(true); // true = fromDrag (uloží, ale nereštartuje monitoring)
             }
         }
 
