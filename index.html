@@ -460,9 +460,18 @@
                             Uložiť Hranice
                         </button>
                         
-                        <!-- Kontajnery pre prepínače -->
-                        <div class="flex items-center justify-center space-x-6">
-                            <!-- Prepínač Alarm Aktívny -->
+                        <!-- Kontajnery pre prepínače (UPRAVENÉ v10.17) -->
+                        <div class="flex items-center justify-center space-x-4 sm:space-x-6">
+                            <!-- NOVÉ: Prepínač Hlavný Alarm -->
+                            <div class="flex flex-col items-center">
+                                <label for="master-alarm-toggle" class="block text-sm font-medium text-red-400 mb-2 whitespace-nowrap">VŠETKY ALARMY</label>
+                                <button type="button" id="master-alarm-toggle" class="toggle-bg toggled" role="switch" aria-checked="true">
+                                    <span class="sr-only">Všetky Alarmy</span>
+                                    <span aria-hidden="true" class="toggle-dot"></span>
+                                </button>
+                            </div>
+
+                            <!-- Prepínač Alarm Aktívny (pre coin) -->
                             <div class="flex flex-col items-center">
                                 <label for="alarm-enabled-toggle" class="block text-sm font-medium text-gray-300 mb-2 whitespace-nowrap">Alarm Aktívny</label>
                                 <button type="button" id="alarm-enabled-toggle" class="toggle-bg toggled" role="switch" aria-checked="true">
@@ -470,7 +479,7 @@
                                     <span aria-hidden="true" class="toggle-dot"></span>
                                 </button>
                             </div>
-                             <!-- Prepínač Zvuk Alarmu (Mute) -->
+                             <!-- Prepínač Zvuk Alarmu (Mute) (pre coin) -->
                             <div class="flex flex-col items-center">
                                 <label for="alarm-sound-toggle" class="block text-sm font-medium text-gray-300 mb-2 whitespace-nowrap">Zvuk Alarmu</label>
                                 <button type="button" id="alarm-sound-toggle" class="toggle-bg toggled" role="switch" aria-checked="true">
@@ -526,10 +535,9 @@
         let currentIntervalSeconds = 10; 
         let secondsRemaining = 10; 
         
-        /* --- ZMENA v10.15: Prepínače alarmu sú preč z globálnych --- */
+        /* --- ZMENA v10.17: Pridaný Master Alarm --- */
         let globalSettings = {
-            /* isAlarmSystemEnabled: true, */ /* PRESUNUTÉ */
-            /* isAlarmSoundEnabled: true, */ /* PRESUNUTÉ */
+            isMasterAlarmEnabled: true, // NOVÉ v10.17: Default ON
             apiSource: 'bybit-perp-linear',
             intervalSeconds: 10
         };
@@ -567,6 +575,7 @@
         const saveJournal = document.getElementById('save-journal'); 
         const alarmEnabledToggle = document.getElementById('alarm-enabled-toggle');
         const alarmSoundToggle = document.getElementById('alarm-sound-toggle'); 
+        const masterAlarmToggle = document.getElementById('master-alarm-toggle'); // NOVÉ v10.17
         const priceAxisWrapper = document.getElementById('price-axis-wrapper'); 
         const recenterButton = document.getElementById('recenter-button'); 
         const hardResetButton = document.getElementById('hard-reset-button'); // NOVÉ
@@ -680,6 +689,8 @@
             /* 1. Načítaj globálne nastavenia */
             globalSettings.apiSource = settings.apiSource || 'bybit-perp-linear';
             globalSettings.intervalSeconds = settings.intervalSeconds || 10;
+            // NOVÉ v10.17: Načítaj master alarm, default na true (zariadenie je "armed")
+            globalSettings.isMasterAlarmEnabled = (settings.isMasterAlarmEnabled === false) ? false : true; 
             
             apiSourceSelect.value = globalSettings.apiSource;
             intervalSlider.value = globalSettings.intervalSeconds;
@@ -700,10 +711,10 @@
             /* 5. Aplikuj nastavenia pre aktívny coin */
             applyCurrentCoinSettings(false);
             
-            /* 6. Aktualizuj UI (prepínače sú preč) */
-            /* updateAlarmSystemStatus(false); */
-            /* updateAlarmSoundStatus(false); */
+            /* 6. Aktualizuj UI */
             renderFavorites();
+            // NOVÉ v10.17: Aktualizuj UI pre master toggle
+            updateMasterAlarmStatus(false); // false = don't save
         }
 
 
@@ -848,8 +859,7 @@
                 apiSource: globalSettings.apiSource,
                 lastUsedCoin: currentCoinSymbol,
                 intervalSeconds: globalSettings.intervalSeconds,
-                /* ODSTRÁNENÉ v10.15: isAlarmSystemEnabled: globalSettings.isAlarmSystemEnabled, */
-                /* ODSTRÁNENÉ v10.15: isAlarmSoundEnabled: globalSettings.isAlarmSoundEnabled, */
+                isMasterAlarmEnabled: globalSettings.isMasterAlarmEnabled, // NOVÉ v10.17
                 favorites: favorites,
             };
 
@@ -862,6 +872,7 @@
         }
 
         /* Hlavná funkcia ukladania (pre D&D, Uložiť Hranice, SelectFavorite) */
+        /* OPRAVA v10.18: Vyčistenie od skopírovaného kódu */
         async function saveSettings(fromDrag = false) {
             
             /* 1. VŽDY aktualizuj globálne nastavenia z UI */
@@ -872,7 +883,6 @@
             let triggerRecalc = false;
             
             /* OPRAVA v10.2: Vždy použi globálnu premennú 'currentCoinSymbol'. */
-            /* Nečítaj z 'coinSymbolInput', ktorý je len na pridávanie. */
             const symbolToSave = currentCoinSymbol; 
 
             // NOVÉ v10.15: Načítaj aktuálny stav prepínačov z cache (bol aktualizovaný kliknutím alebo načítaním)
@@ -924,8 +934,7 @@
                 apiSource: globalSettings.apiSource,
                 lastUsedCoin: symbolToSave, // Ulož správny coin
                 intervalSeconds: globalSettings.intervalSeconds,
-                /* ODSTRÁNENÉ v10.15: isAlarmSystemEnabled: globalSettings.isAlarmSystemEnabled, */
-                /* ODSTRÁNENÉ v10.15: isAlarmSoundEnabled: globalSettings.isAlarmSoundEnabled, */
+                isMasterAlarmEnabled: globalSettings.isMasterAlarmEnabled, // NOVÉ v10.17
                 favorites: favorites,
             };
 
@@ -933,6 +942,8 @@
             if (coinSettingsToSave) {
                 const apiText = apiSourceSelect.options[apiSourceSelect.selectedIndex].text;
                 const btcPriceLog = currentBtcPrice > 0 ? ` | Cena: ${formatSkNumber(currentBtcPrice)}` : '';
+                
+                /* TOTO BOLO ZLE - KÓD Z CHECKPRICEALERT BOL TU */
                 
                 if (triggerRecalc) {
                      logToJournal(`Spustené prepočítanie 0.1% pre ${symbolToSave}... (API: ${apiText} | Interval: ${globalSettings.intervalSeconds}s)`);
@@ -961,16 +972,16 @@
                     await setDoc(userSettingsRef, globalSettingsToSave, { merge: true });
                 } catch (e) {
                     console.error("Chyba pri ukladaní globálnych nastavení:", e);
+                } // <-- OPRAVA CHÝBAJÚCEJ ZÁTVORKY
+            }
+            
+            /* --- OPRAVA v10.3: Reštartuj monitorovanie AŽ PO uložení --- */
+            if (!fromDrag) { // Ak to bolo volané z "Uložiť Hranice"
+                currentBtcPrice = 0; 
+                firstSuccessfulFetch = false; 
+                applyCurrentCoinSettings(true); // true = reštartuj monitorovanie
             }
         }
-            
-        /* --- OPRAVA v10.3: Reštartuj monitorovanie AŽ PO uložení --- */
-        if (!fromDrag) { // Ak to bolo volané z "Uložiť Hranice"
-            currentBtcPrice = 0; 
-            firstSuccessfulFetch = false; 
-            applyCurrentCoinSettings(true); // true = reštartuj monitorovanie
-        }
-    }
 
 
         /* --- Zvuk Alarmu (Tone.js) --- */
@@ -1306,6 +1317,7 @@
         }
         
         /* --- Hlavná Logika Alarmu --- */
+        /* OPRAVA v10.18: Vyčistenie od skopírovaného kódu */
         async function checkPriceAndAlert() {
             try {
                 const price = await fetchBitcoinPrice();
@@ -1325,7 +1337,6 @@
                     firstSuccessfulFetch = true; /* Označ prvé úspešné načítanie */
                     
                     /* Skontroluj, či polia *stále* nemajú hodnoty */
-                    /* (mohli sa načítať z DB tesne predtým) */
                     const existingLow = parseLocaleNumber(lowThresholdInput.value) || 0;
                     const existingHigh = parseLocaleNumber(highThresholdInput.value) || 0;
                     
@@ -1340,26 +1351,25 @@
                         highThresholdInput.value = formatSkNumber(high);
                         
                         /* Zavolaj saveSettings, aby sa tieto nové 0.1% hranice */
-                        /* uložili do DB pre tento coin */
                         saveSettings(true); /* true = bez reštartu */
                         
-                        /* Keďže sme práve uložili, potrebujeme aktualizovať aj 'low' a 'high' pre kontrolu alarmu */
-                        /* Alebo jednoducho vráťme, aby sa to skontrolovalo v ďalšom cykle */
+                        /* Vráťme, aby sa to skontrolovalo v ďalšom cykle */
                         return;
                     }
                 }
                 
-                /* if (!firstSuccessfulFetch) firstSuccessfulFetch = true; */ /* Toto už je hore */
-                
                 updatePriceAxis(price, low, high, forceProportionalUpdate); 
                 forceProportionalUpdate = false; /* Resetuj vynútenie */
 
+                /* TOTO BOLO ZLE - KÓD Z SAVESETTINGS BOL TU */
+                
                 // NOVÉ v10.15: Získaj stav alarmu pre AKTUÁLNY coin
                 const currentCoinAlarmEnabled = allCoinSettings[currentCoinSymbol]?.isAlarmSystemEnabled || false;
 
                 /* --- Logika Alarmu (KONTROLA PREPÍNAČA) --- */
-                if (!currentCoinAlarmEnabled) { // Použi špecifický stav
-                    return; /* Alarm je vypnutý, nič nekontroluj */
+                // UPRAVENÉ v10.17: Kontroluj Master a Per-Coin
+                if (!globalSettings.isMasterAlarmEnabled || !currentCoinAlarmEnabled) { 
+                    return; /* Alarm je vypnutý (buď centrálne alebo pre coin), nič nekontroluj */
                 }
 
                 if (isAlarmMuted) {
@@ -1399,8 +1409,8 @@
             // NOVÉ v10.15: Získaj stav alarmu pre AKTUÁLNY coin
             const currentCoinAlarmEnabled = allCoinSettings[currentCoinSymbol]?.isAlarmSystemEnabled || false;
 
-            /* Kontrola prepínača */
-            if (!currentCoinAlarmEnabled) return; 
+            /* Kontrola prepínača (UPRAVENÉ v10.17) */
+            if (!globalSettings.isMasterAlarmEnabled || !currentCoinAlarmEnabled) return; 
             if (isAlarmActive) return; 
             
             isAlarmActive = true;
@@ -1703,6 +1713,35 @@
             }
         }
 
+        /* --- NOVÁ FUNKCIA v10.17: Prepínač "Všetky Alarmy" --- */
+        function updateMasterAlarmStatus(doSave = true) {
+            // 1. Prepni stav (ak je to klik)
+            if (doSave) {
+                globalSettings.isMasterAlarmEnabled = !globalSettings.isMasterAlarmEnabled;
+                initializeAudio(); 
+            }
+            
+            // 2. Aktualizuj vizuál prepínača
+            if (globalSettings.isMasterAlarmEnabled) {
+                masterAlarmToggle.classList.add('toggled'); 
+                masterAlarmToggle.setAttribute('aria-checked', 'true');
+            } else {
+                masterAlarmToggle.classList.remove('toggled'); 
+                masterAlarmToggle.setAttribute('aria-checked', 'false');
+                
+                // Ak vypíname master, vypni aj aktívny alarm
+                if (isAlarmActive) {
+                    dismissAlarm();
+                }
+            }
+
+            // 3. Ulož nastavenie (len ak to bolo volané z kliku)
+            if (doSave) {
+                saveGlobalSettingsOnly(); // Uloží iba globálne nastavenia
+            }
+        }
+
+
         /* --- Nová funkcia pre prepínač "Alarm Aktívny" (OPRAVENÁ LOGIKA v10.15) --- */
         function updateAlarmSystemStatus(doSave = true, explicitState = null) {
             let currentState = false; // Predvolený stav
@@ -1841,6 +1880,11 @@
 
         /* NOVÉ: Listener pre Hard Reset */
         hardResetButton.addEventListener('click', hardResetToPointOnePercent);
+
+        /* NOVÉ v10.17: Listener pre Master Alarm */
+        masterAlarmToggle.addEventListener('click', () => {
+            updateMasterAlarmStatus(true);
+        });
 
         alarmEnabledToggle.addEventListener('click', () => {
             updateAlarmSystemStatus(true); 
