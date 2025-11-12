@@ -93,6 +93,12 @@
             transition: bottom 0.5s ease-out;
         }
         
+        /* NOVÉ: Vypne animáciu počas ťahania */
+        .price-label.is-dragging,
+        .price-dot.is-dragging {
+            transition: none;
+        }
+
         .label-low, .label-high {
             right: 50%; 
             transform: translateX(0); 
@@ -1709,14 +1715,13 @@
             if (low > 0) mainLabelPercents.push(lowPercent);
             if (high > 0) mainLabelPercents.push(highPercent);
 
-            /* --- ZMENENÁ LOGIKA DELTY --- */
-            const deltaLow = (current > 0 && low > 0) ? current - low : 0;
-            const deltaHigh = (current > 0 && high > 0) ? high - current : 0;
+            /* --- OPRAVENÁ LOGIKA DELTY --- */
+            const deltaLow = (current > 0 && low > 0) ? current - low : 0; // Bude > 0 ak je current nad low
+            const deltaHigh = (current > 0 && high > 0) ? high - current : 0; // Bude > 0 ak je high nad current
 
             if (current > 0) {
                 document.getElementById('current-dot').style.bottom = `${clamp(currentPercent)}%`;
                 document.getElementById('current-label').style.bottom = `${clamp(currentPercent)}%`;
-                // POUŽI NOVÝ FORMÁTOVAČ
                 document.getElementById('current-label').textContent = `CENA: ${formatDynamicSkNumber(current)}`;
                 document.getElementById('current-dot').classList.remove('hidden');
                 document.getElementById('current-label').classList.remove('hidden');
@@ -1727,8 +1732,8 @@
             
             document.getElementById('low-dot').style.bottom = `${clamp(lowPercent)}%`;
             document.getElementById('low-label').style.bottom = `${clamp(lowPercent)}%`;
-            // POUŽI NOVÝ FORMÁTOVAČ A OPRAVENÚ LOGIKU ZNAMIENKA
-            const deltaLowText = (deltaLow >= 0) ? ` (+${formatDynamicDelta(deltaLow)})` : ` (-${formatDynamicDelta(deltaLow)})`;
+            // OPRAVA ZNAMIENKA: deltaLow (current - low) je pozitívna, ale chceme zobraziť (-)
+            const deltaLowText = (deltaLow >= 0) ? ` (-${formatDynamicDelta(deltaLow)})` : ` (+${formatDynamicDelta(Math.abs(deltaLow))})`;
             if (low <= 0) {
                  document.getElementById('low-label').textContent = `LOW: ${formatDynamicSkNumber(low)}`;
             } else {
@@ -1739,8 +1744,8 @@
 
             document.getElementById('high-dot').style.bottom = `${clamp(highPercent)}%`;
             document.getElementById('high-label').style.bottom = `${clamp(highPercent)}%`;
-            // POUŽI NOVÝ FORMÁTOVAČ A OPRAVENÚ LOGIKU ZNAMIENKA
-            const deltaHighText = (deltaHigh >= 0) ? ` (-${formatDynamicDelta(deltaHigh)})` : ` (+${formatDynamicDelta(deltaHigh)})`;
+            // OPRAVA ZNAMIENKA: deltaHigh (high - current) je pozitívna, a chceme zobraziť (+)
+            const deltaHighText = (deltaHigh >= 0) ? ` (+${formatDynamicDelta(deltaHigh)})` : ` (-${formatDynamicDelta(Math.abs(deltaHigh))})`;
             if (high <= 0) {
                  document.getElementById('high-label').textContent = `HIGH: ${formatDynamicSkNumber(high)}`;
             } else {
@@ -1782,7 +1787,6 @@
                     
                     const labelEl = document.createElement('span');
                     labelEl.className = 'axis-grid-label-text';
-                    // POUŽI NOVÝ FORMÁTOVAČ
                     labelEl.textContent = formatDynamicSkNumber(price);
 
                     itemEl.appendChild(labelEl); 
@@ -1977,8 +1981,14 @@
             dragStartY = e.touches ? e.touches[0].clientY : e.clientY;
             if (isDragging === 'low') {
                 dragStartPrice = parseLocaleNumber(lowThresholdInput.value) || 0;
+                // PRIDAŤ TRIEDU
+                document.getElementById('low-label').classList.add('is-dragging');
+                document.getElementById('low-dot').classList.add('is-dragging');
             } else {
                 dragStartPrice = parseLocaleNumber(highThresholdInput.value) || 0;
+                // PRIDAŤ TRIEDU
+                document.getElementById('high-label').classList.add('is-dragging');
+                document.getElementById('high-dot').classList.add('is-dragging');
             }
             // --- Koniec novej logiky ---
             
@@ -2048,6 +2058,12 @@
             document.removeEventListener('touchmove', handleDragMove);
             document.removeEventListener('touchend', handleDragEnd);
             
+            // ODSTRÁNIŤ TRIEDY
+            document.getElementById('low-label').classList.remove('is-dragging');
+            document.getElementById('low-dot').classList.remove('is-dragging');
+            document.getElementById('high-label').classList.remove('is-dragging');
+            document.getElementById('high-dot').classList.remove('is-dragging');
+
             formatInputAsSk({ target: lowThresholdInput });
             formatInputAsSk({ target: highThresholdInput });
 
