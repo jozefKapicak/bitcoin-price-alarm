@@ -188,7 +188,6 @@
         .toggle-bg.toggled .toggle-dot {
             transform: translateX(22px);
         }
-        /* Tlačidlo Recentrovať - ODSTRÁNENÉ */
         
         /* Slovenský formát pre input[type=number] */
         .locale-format {
@@ -287,6 +286,11 @@
             color: #1F2937; /* gray-800 */
             opacity: 1;
         }
+
+        /* ZMENA NÁZVU TLAČIDLA RESET */
+        #hard-reset-button span {
+            /* Text sa mení dynamicky cez JS */
+        }
     </style>
 </head>
 <body class="h-full p-4 md:p-8 bg-gray-900 text-gray-200">
@@ -321,14 +325,15 @@
                             <!-- Tlačidlo Hard Reset -->
                             <button id="hard-reset-button" 
                                     class="flex items-center space-x-1.5 py-1.5 px-3 bg-yellow-600/20 text-yellow-300 rounded-md hover:bg-yellow-600/40 hover:text-yellow-200 transition-all duration-150" 
-                                    title="Hard Reset: Vypočítať a uložiť nové 0.1% hranice">
+                                    title="Hard Reset: Vypočítať a uložiť nové dynamické hranice">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
                                     <path fill-rule="evenodd" d="M9 10a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0v-1.5A.75.75 0 0 1 9 10Z" clip-rule="evenodd" />
                                     <path fill-rule="evenodd" d="M8.25 10a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 0 1.5h-1.5A.75.75 0 0 1 8.25 10Z" clip-rule="evenodd" />
                                     <path fill-rule="evenodd" d="M9 10a.75.75 0 0 1 .75-.75h.01a.75.75 0 0 1 .75.75v.01a.75.75 0 0 1-.75.75h-.01A.75.75 0 0 1 9 10Z" clip-rule="evenodd" />
                                     <path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm-5.75-8a.75.75 0 0 0 0 1.5h.01a.75.75 0 0 0 0-1.5h-.01ZM10 4.25a.75.75 0 0 1 .75.75v.01a.75.75 0 0 1-1.5 0v-.01a.75.75 0 0 1 .75-.75ZM10 15.75a.75.75 0 0 1 .75-.75v-.01a.75.75 0 0 1-1.5 0v.01a.75.75 0 0 1 .75.75ZM15.75 10a.75.75 0 0 0 0-1.5h-.01a.75.75 0 0 0 0 1.5h.01Z" clip-rule="evenodd" />
                                 </svg>
-                                <span class="text-xs font-medium">Reset 0.1%</span>
+                                <!-- ZMENA: Text sa nastavuje cez JS -->
+                                <span id="hard-reset-button-text" class="text-xs font-medium">Reset 0.1%</span>
                             </button>
                         </div>
 
@@ -340,8 +345,6 @@
                             <div id="status-indicator" class="w-3 h-3 rounded-full bg-gray-500" title="Pripájam sa..."></div>
                         </div>
                     </div>
-
-                    <!-- NOVÁ SEKCIA: Ovládacie Tlačidlá Grafu (TÁTO SEKCIA BOLA ODSTRÁNENÁ) -->
                     
                     <!-- Vertikálna os -->
                     <div id="price-axis-wrapper" class="price-axis-container">
@@ -377,12 +380,9 @@
                 <div class="bg-gray-800 shadow-xl rounded-lg p-4 sticky top-8">
                       <h2 class="text-xl font-bold text-white mb-4">Obľúbené</h2>
                       <!-- Pridanie coinu -->
-                      <!-- ZMENA: Zväčšená medzera (mb-6) -->
                       <div class="mb-6">
                         <label for="favorite-symbol-input" class="block text-sm font-medium text-gray-300 mb-2">Pridať Coin</label>
-                        <!-- ZMENA: Input už nie je v 'flex' -->
                         <input type="text" id="favorite-symbol-input" class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:ring-2 focus:ring-blue-500 mb-2" placeholder="napr. ETHUSDT">
-                        <!-- ZMENA: Tlačidlo je teraz samostatné -->
                         <button id="add-favorite-btn" title="Pridať do obľúbených">
                             + Pridať do obľúbených
                         </button>
@@ -398,8 +398,6 @@
             <div class="md:w-4/12">
                 <div class="bg-gray-800 shadow-xl rounded-lg p-6">
                     <h2 class="text-2xl font-bold text-white mb-6">Nastavenia</h2>
-
-                    <!-- OPRAVENÉ REŠTRUKTUROVANÉ ROZLOŽENIE -->
 
                     <!-- Riadok 1: API -->
                     <div class="mb-6">
@@ -500,8 +498,6 @@
                         </div>
                     </div>
                     
-                    <!-- ŽURNÁL BOL ODTIAĽTO PRESUNUTÝ -->
-
                 </div>
             </div>
         </div>
@@ -545,16 +541,14 @@
         let currentIntervalSeconds = 10; 
         let secondsRemaining = 10; 
         
-        /* --- ZMENA v10.17: Pridaný Master Alarm --- */
         let globalSettings = {
-            isMasterAlarmEnabled: true, // NOVÉ v10.17: Default ON
+            isMasterAlarmEnabled: true,
             apiSource: 'bybit-perp-linear',
             intervalSeconds: 10
         };
         let currentCoinSymbol = 'BTCUSDT'; /* Aktívne zvolený coin */
         let favorites = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT'];
         let allCoinSettings = {}; /* Mapa pre ukladanie LOW/HIGH pre každý coin */
-        /* --------------------------------- */
         let isInitialLoad = true; 
         let firstSuccessfulFetch = false; 
 
@@ -576,7 +570,7 @@
         const alarmModal = document.getElementById('alarm-modal');
         const alarmMessage = document.getElementById('alarm-message');
         const apiSourceSelect = document.getElementById('api-source');
-        const coinSymbolInput = document.getElementById('favorite-symbol-input'); /* ZMENA ID */
+        const coinSymbolInput = document.getElementById('favorite-symbol-input');
         const apiSourceDisplay = document.getElementById('api-source-display');
         const intervalSlider = document.getElementById('interval-slider');
         const intervalValue = document.getElementById('interval-value');
@@ -585,39 +579,34 @@
         const saveJournal = document.getElementById('save-journal'); 
         const alarmEnabledToggle = document.getElementById('alarm-enabled-toggle');
         const alarmSoundToggle = document.getElementById('alarm-sound-toggle'); 
-        const masterAlarmToggle = document.getElementById('master-alarm-toggle'); // NOVÉ v10.17
+        const masterAlarmToggle = document.getElementById('master-alarm-toggle');
         const priceAxisWrapper = document.getElementById('price-axis-wrapper'); 
         const recenterButton = document.getElementById('recenter-button'); 
-        const hardResetButton = document.getElementById('hard-reset-button'); // NOVÉ
+        const hardResetButton = document.getElementById('hard-reset-button');
+        const hardResetButtonText = document.getElementById('hard-reset-button-text'); // NOVÝ ELEMENT
         const favoritesBar = document.getElementById('favorites-list'); 
-        const addFavoriteButton = document.getElementById('add-favorite-btn'); /* ZMENA ID */
+        const addFavoriteButton = document.getElementById('add-favorite-btn');
 
         /* --- Formátovače Čísel (OPRAVA pre desatinné miesta) --- */
         
-        /* Formátovač pre slovenský štýl (105 330,30) - pre graf, inputy a žurnál */
-        /* Zobrazí AŽ 8 desatinných miest, ale nie zbytočné nuly */
         const skNumberFormatter = new Intl.NumberFormat('sk-SK', {
             style: 'decimal',
             maximumFractionDigits: 8, 
         });
         
-        /* Formátovač pre graf (delta) */
         const skDeltaFormatter = new Intl.NumberFormat('sk-SK', {
             style: 'decimal',
             maximumFractionDigits: 8,
         });
         
         /* --- Formátovanie cien --- */
-        /* Univerzálna funkcia na parsovanie vstupu (akceptuje bodku aj čiarku) */
         function parseLocaleNumber(stringNumber) {
             if (typeof stringNumber !== 'string') return parseFloat(stringNumber);
             const sanitized = stringNumber.replace(/\s/g, '').replace(',', '.');
             return parseFloat(sanitized);
         }
 
-        /* Formátuje číslo na slovenský formát */
         function formatSkNumber(price) {
-            /* Zabezpečenie proti záporným číslam (kvôli min paddingu) */
             const safePrice = Math.max(0, price);
             return skNumberFormatter.format(safePrice);
         }
@@ -632,6 +621,35 @@
             logEntry.innerHTML = `<span class="text-gray-500">[${timestamp}]</span> <span class="text-gray-200">${message}</span>`;
             
             saveJournal.insertBefore(logEntry, saveJournal.firstChild);
+        }
+
+        /* --- NOVÁ FUNKCIA: Dynamický Spread --- */
+        /**
+         * Vracia dynamický spread (napr. 0.001 pre 0.1%) na základe ceny coinu.
+         * @param {number} price - Aktuálna cena coinu.
+         * @returns {number} - Hodnota spreadu (napr. 0.01 pre 1%).
+         */
+        function getDynamicSpread(price) {
+            if (price > 1000) {
+                return 0.001; // 0.1% pre ceny > $1000 (napr. BTC)
+            } else if (price > 1) {
+                return 0.005; // 0.5% pre ceny > $1 (napr. SOL)
+            } else {
+                return 0.01; // 1.0% pre ceny <= $1 (napr. SAND)
+            }
+        }
+        
+        /**
+         * Aktualizuje text na tlačidle "Reset" podľa aktuálneho dynamického spreadu.
+         */
+        function updateResetButtonText() {
+            if (currentBtcPrice > 0) {
+                const spread = getDynamicSpread(currentBtcPrice);
+                const percentText = (spread * 100).toFixed(1);
+                hardResetButtonText.textContent = `Reset ${percentText}%`;
+            } else {
+                hardResetButtonText.textContent = `Reset ...%`;
+            }
         }
 
         /* --- Inicializácia Firebase --- */
@@ -662,11 +680,10 @@
                         const docPath = `artifacts/${appId}/users/${userId}/btcAlarmSettings/userSettings`;
                         userSettingsRef = doc(db, docPath);
                         
-                        /* --- NOVÉ: Referencia na sub-kolekciu --- */
                         coinSettingsCollectionRef = collection(db, userSettingsRef.path, 'coinSettings');
                         
-                        listenForSettings(); /* Načítaj globálne nastavenia */
-                        listenToCoinSettings(); /* Začni počúvať zmeny v nastaveniach coinov */
+                        listenForSettings();
+                        listenToCoinSettings();
                     } else {
                         try {
                             if (typeof __initial_auth_token !== 'undefined') {
@@ -692,93 +709,68 @@
 
         /* --- Spracovanie Nastavení (Firestore) --- */
         
-        /* Načíta globálne nastavenia (API, Interval, Obľúbené...) */
-        /* OPRAVA v10.1: Zmenená logika načítania, aby zodpovedala plochej štruktúre DB */
-        /* OPRAVA v10.15: Zjednodušené, prepínače sú preč */
         function loadGlobalSettings(settings = {}) {
-            /* 1. Načítaj globálne nastavenia */
             globalSettings.apiSource = settings.apiSource || 'bybit-perp-linear';
             globalSettings.intervalSeconds = settings.intervalSeconds || 10;
-            // NOVÉ v10.17: Načítaj master alarm, default na true (zariadenie je "armed")
             globalSettings.isMasterAlarmEnabled = (settings.isMasterAlarmEnabled === false) ? false : true; 
             
             apiSourceSelect.value = globalSettings.apiSource;
             intervalSlider.value = globalSettings.intervalSeconds;
             intervalValue.textContent = `${globalSettings.intervalSeconds}s`;
 
-            /* 2. Načítaj obľúbené */
             favorites = settings.favorites || ['BTCUSDT', 'ETHUSDT', 'SOLUSDT'];
-
-            /* 3. Načítaj mapu nastavení pre coiny (použije sa v listenToCoinSettings) */
-            /* Toto je starý spôsob, ponechané pre spätnú kompatibilitu, ak by tam bolo */
             allCoinSettings = settings.coinSettings || allCoinSettings; 
-
-            /* 4. Načítaj posledný aktívny coin (OPRAVA: 'lastUsedCoin' namiesto 'activeCoin') */
             currentCoinSymbol = settings.lastUsedCoin || 'BTCUSDT';
-            /* OPRAVA v10.3: Nechceme, aby sa input na pridávanie menil pri načítaní */
-            /* coinSymbolInput.value = currentCoinSymbol; */ 
 
-            /* 5. Aplikuj nastavenia pre aktívny coin */
             applyCurrentCoinSettings(false);
             
-            /* 6. Aktualizuj UI */
             renderFavorites();
-            // NOVÉ v10.17: Aktualizuj UI pre master toggle
-            updateMasterAlarmStatus(false); // false = don't save
+            updateMasterAlarmStatus(false);
         }
 
-
-        /* NOVÁ FUNKCIA: Aplikuje LOW/HIGH pre zvolený coin */
-        /* UPRAVENÉ v10.15: Aplikuje aj prepínače alarmu */
         function applyCurrentCoinSettings(isNewCoin = false) {
             const symbol = currentCoinSymbol;
             const settings = allCoinSettings[symbol];
 
-            let coinSpecificAlarmEnabled = false; // Default: OFF
-            let coinSpecificSoundEnabled = false; // Default: OFF
+            let coinSpecificAlarmEnabled = false;
+            let coinSpecificSoundEnabled = false;
 
             if (settings) {
-                /* Tento coin má uložené nastavenia */
                 lowThresholdInput.value = formatSkNumber(settings.low || 0);
                 highThresholdInput.value = formatSkNumber(settings.high || 0);
                 
                 if(settings.low > 0) {
-                   firstSuccessfulFetch = true; /* Máme dáta, netreba kalkulovať 0.1% */
+                   firstSuccessfulFetch = true;
                 } else {
-                   firstSuccessfulFetch = false; /* Vynúti 0.1% kalkuláciu pri prvej cene */
+                   firstSuccessfulFetch = false;
                 }
                 
-                // NOVÉ v10.15: Načítaj špecifické nastavenia alarmu pre tento coin
-                // Ak je 'undefined', vráti 'undefined'. || false to opraví.
                 coinSpecificAlarmEnabled = settings.isAlarmSystemEnabled || false;
                 coinSpecificSoundEnabled = settings.isAlarmSoundEnabled || false;
 
             } else {
-                /* Tento coin nemá nastavenia (alebo sú neplatné) */
                 lowThresholdInput.value = '';
                 highThresholdInput.value = '';
-                firstSuccessfulFetch = false; /* Vynúti 0.1% kalkuláciu pri prvej cene */
-                // Nový coin, defaulty (false, false) sa použijú
+                firstSuccessfulFetch = false;
             }
             
-            // Aktualizuj UI prepínačov na základe hodnôt pre TENTO coin
             updateAlarmSystemStatus(false, coinSpecificAlarmEnabled);
             updateAlarmSoundStatus(false, coinSpecificSoundEnabled);
 
+            // Pri zmene coinu resetuj aj text tlačidla reset
+            updateResetButtonText();
 
             if (isNewCoin) {
-                currentBtcPrice = 0; /* Resetuj cenu */
-                updatePriceAxis(0, 0, 0, false); /* Okamžite vyčisti graf */
-                startMonitoring(); /* A okamžite spusti načítanie nového coinu */
+                currentBtcPrice = 0;
+                updatePriceAxis(0, 0, 0, false);
+                startMonitoring();
             }
         }
 
-
-        /* Počúva iba GLOBÁLNE nastavenia */
         function listenForSettings() {
             if (!userSettingsRef) {
-                loadGlobalSettings(); /* Načítaj predvolené */
-                applyCurrentCoinSettings(true); /* Aplikuj (prázdne) nastavenia coinu */
+                loadGlobalSettings();
+                applyCurrentCoinSettings(true);
                 isInitialLoad = false;
                 return;
             }
@@ -789,18 +781,16 @@
                     settings = docSnap.data();
                 }
                 
-                loadGlobalSettings(settings); /* Načítaj (API, Interval, Obľúbené...) */
+                loadGlobalSettings(settings);
                 
-                /* OPRAVA BUGU 2: Spusti monitorovanie *iba* pri prvom načítaní. */
                 if (isInitialLoad) {
-                    /* applyCurrentCoinSettings(false); */ /* Toto sa už volá v loadGlobalSettings */
-                    startMonitoring(); /* Spusti monitorovanie s načítanými nastaveniami */
+                    startMonitoring();
                     isInitialLoad = false;
                 }
 
             }, (error) => {
                 console.error("Chyba pri počúvaní globálnych nastavení:", error);
-                loadGlobalSettings(); /* Načítaj predvolené */
+                loadGlobalSettings();
                 if (isInitialLoad) {
                     applyCurrentCoinSettings(true);
                     isInitialLoad = false;
@@ -808,9 +798,8 @@
             });
         }
 
-        /* NOVÉ: Počúva zmeny v NASTAVENIACH COINOV (Low/High) */
         function listenToCoinSettings() {
-            if (coinSettingsListener) coinSettingsListener(); /* Odpoj starý listener */
+            if (coinSettingsListener) coinSettingsListener();
             
             if (!coinSettingsCollectionRef) {
                  console.warn("Referencia na kolekciu coinov chýba");
@@ -820,18 +809,14 @@
             coinSettingsListener = onSnapshot(query(coinSettingsCollectionRef), (querySnapshot) => {
                 let settingsChangedForCurrentCoin = false;
                 
-                /* Načítaj VŠETKY nastavenia coinov nanovo */
-                /* (Potrebné pre prípad, že sa pripájame prvýkrát) */
                 allCoinSettings = {};
                 querySnapshot.forEach((doc) => {
                     allCoinSettings[doc.id] = doc.data();
                 });
 
-                /* Aplikuj nastavenia pre aktuálny coin, ak sa ešte nenačítal (isInitialLoad) */
                 if(isInitialLoad) {
                     applyCurrentCoinSettings(false);
                 } else {
-                     /* Ak sme už načítaní, sleduj zmeny */
                     querySnapshot.docChanges().forEach((change) => {
                         const symbol = change.doc.id;
                         if (symbol === currentCoinSymbol) {
@@ -840,10 +825,8 @@
                     });
                 }
                 
-                /* Ak sa zmenili dáta (Low/High) pre coin, ktorý práve pozeráme, */
-                /* (napr. zmenou z iného zariadenia), prekresli to. */
                 if (settingsChangedForCurrentCoin && !isInitialLoad) {
-                    applyCurrentCoinSettings(false); /* Aplikuj nové dáta */
+                    applyCurrentCoinSettings(false);
                     updatePriceAxis(currentBtcPrice, 
                         parseLocaleNumber(lowThresholdInput.value), 
                         parseLocaleNumber(highThresholdInput.value)
@@ -854,26 +837,20 @@
             });
         }
 
-        /* --- OPRAVENÁ LOGIKA UKLADANIA (v10.2) --- */
-        
-        /* Nová funkcia len na uloženie globálnych nastavení (napr. pri zmene obľúbených) */
         async function saveGlobalSettingsOnly() {
-            if (!userSettingsRef) return; // Ak nie je DB, niet čo ukladať
+            if (!userSettingsRef) return; 
 
-            /* 1. Načítaj aktuálne hodnoty z UI */
             globalSettings.apiSource = apiSourceSelect.value;
             globalSettings.intervalSeconds = parseInt(intervalSlider.value);
             
-            /* 2. Priprav objekt na uloženie */
             const globalSettingsToSave = {
                 apiSource: globalSettings.apiSource,
                 lastUsedCoin: currentCoinSymbol,
                 intervalSeconds: globalSettings.intervalSeconds,
-                isMasterAlarmEnabled: globalSettings.isMasterAlarmEnabled, // NOVÉ v10.17
+                isMasterAlarmEnabled: globalSettings.isMasterAlarmEnabled,
                 favorites: favorites,
             };
 
-            /* 3. Ulož */
             try {
                 await setDoc(userSettingsRef, globalSettingsToSave, { merge: true });
             } catch (e) {
@@ -881,94 +858,78 @@
             }
         }
 
-        /* Hlavná funkcia ukladania (pre D&D, Uložiť Hranice, SelectFavorite) */
-        /* OPRAVA v10.18: Vyčistenie od skopírovaného kódu */
         async function saveSettings(fromDrag = false) {
             
-            /* 1. VŽDY aktualizuj globálne nastavenia z UI */
             globalSettings.apiSource = apiSourceSelect.value;
             globalSettings.intervalSeconds = parseInt(intervalSlider.value);
             
             let coinSettingsToSave = null; 
             let triggerRecalc = false;
             
-            /* OPRAVA v10.2: Vždy použi globálnu premennú 'currentCoinSymbol'. */
             const symbolToSave = currentCoinSymbol; 
 
-            // NOVÉ v10.15: Načítaj aktuálny stav prepínačov z cache (bol aktualizovaný kliknutím alebo načítaním)
             const currentAlarmEnabled = allCoinSettings[symbolToSave]?.isAlarmSystemEnabled || false;
             const currentSoundEnabled = allCoinSettings[symbolToSave]?.isAlarmSoundEnabled || false;
 
-            if (fromDrag) { // e.g. from D&D or selectFavorite
-                /* 2a. Ak je to z D&D alebo selectFavorite, dáta sú platné */
+            if (fromDrag) { 
                 const lowVal = Math.max(MIN_PRICE, parseLocaleNumber(lowThresholdInput.value) || 0);
                 const highVal = parseLocaleNumber(highThresholdInput.value) || 0;
-                // Ulož aj prepínače
                 coinSettingsToSave = { 
                     low: lowVal, 
                     high: highVal,
                     isAlarmSystemEnabled: currentAlarmEnabled,
                     isAlarmSoundEnabled: currentSoundEnabled
                 };
-                allCoinSettings[symbolToSave] = coinSettingsToSave; /* Update cache */
+                allCoinSettings[symbolToSave] = coinSettingsToSave;
             
-            } else { // from "Uložiť Hranice"
-                /* 2b. Ak je to z "Uložiť Hranice" */
+            } else { 
                 const lowVal = parseLocaleNumber(lowThresholdInput.value) || 0;
                 const highVal = parseLocaleNumber(highThresholdInput.value) || 0;
 
                 if (lowVal > MIN_PRICE && highVal > lowVal) {
-                    /* Dáta sú platné, ulož ich */
                     coinSettingsToSave = { 
                         low: lowVal, 
                         high: highVal,
                         isAlarmSystemEnabled: currentAlarmEnabled,
                         isAlarmSoundEnabled: currentSoundEnabled
                     };
-                    allCoinSettings[symbolToSave] = coinSettingsToSave; /* Update cache */
+                    allCoinSettings[symbolToSave] = coinSettingsToSave;
                 } else {
-                    /* Dáta sú neplatné (0 alebo prázdne), vynúť 0.1% recalc */
                     triggerRecalc = true;
                     coinSettingsToSave = { 
                         low: 0, 
                         high: 0,
-                        isAlarmSystemEnabled: currentAlarmEnabled, // Ulož aj prepínače
+                        isAlarmSystemEnabled: currentAlarmEnabled,
                         isAlarmSoundEnabled: currentSoundEnabled
                     }; 
                     allCoinSettings[symbolToSave] = coinSettingsToSave; 
                 }
             }
 
-            /* --- Uloženie 1: Globálne Nastavenia --- */
             const globalSettingsToSave = {
                 apiSource: globalSettings.apiSource,
-                lastUsedCoin: symbolToSave, // Ulož správny coin
+                lastUsedCoin: symbolToSave,
                 intervalSeconds: globalSettings.intervalSeconds,
-                isMasterAlarmEnabled: globalSettings.isMasterAlarmEnabled, // NOVÉ v10.17
+                isMasterAlarmEnabled: globalSettings.isMasterAlarmEnabled,
                 favorites: favorites,
             };
 
-            /* --- Uloženie 2: Nastavenia Špecifické pre Coin (ak sú) --- */
             if (coinSettingsToSave) {
                 const apiText = apiSourceSelect.options[apiSourceSelect.selectedIndex].text;
                 const btcPriceLog = currentBtcPrice > 0 ? ` | Cena: ${formatSkNumber(currentBtcPrice)}` : '';
                 
-                /* TOTO BOLO ZLE - KÓD Z CHECKPRICEALERT BOL TU */
-                
                 if (triggerRecalc) {
-                     logToJournal(`Spustené prepočítanie 0.1% pre ${symbolToSave}... (API: ${apiText} | Interval: ${globalSettings.intervalSeconds}s)`);
+                     logToJournal(`Spustené prepočítanie limitov pre ${symbolToSave}... (API: ${apiText} | Interval: ${globalSettings.intervalSeconds}s)`);
                 } else {
-                    /* Loguj iba ak to nie je 'selectFavorite' (kde sú hodnoty 0) */
                     if (!fromDrag || (coinSettingsToSave.low > MIN_PRICE)) {
                         const logMessage = `Uložené: ${symbolToSave} | LOW ${formatSkNumber(coinSettingsToSave.low)} | HIGH ${formatSkNumber(coinSettingsToSave.high)}${btcPriceLog} | Zdroj: ${apiText} | Interval: ${globalSettings.intervalSeconds}s`;
                         logToJournal(logMessage);
                     }
                 }
 
-
                 if (userSettingsRef && coinSettingsCollectionRef) {
                     try {
-                        const currentCoinDocRef = doc(coinSettingsCollectionRef, symbolToSave); // Ulož pre správny coin
+                        const currentCoinDocRef = doc(coinSettingsCollectionRef, symbolToSave);
                         await setDoc(currentCoinDocRef, coinSettingsToSave, { merge: true });
                     } catch (e) {
                         console.error("Chyba pri ukladaní nastavení coinu:", e);
@@ -976,20 +937,18 @@
                 }
             } 
 
-            /* Ulož globálne nastavenia (vždy) */
             if (userSettingsRef) {
                 try {
                     await setDoc(userSettingsRef, globalSettingsToSave, { merge: true });
                 } catch (e) {
                     console.error("Chyba pri ukladaní globálnych nastavení:", e);
-                } // <-- OPRAVA CHÝBAJÚCEJ ZÁTVORKY
+                }
             }
             
-            /* --- OPRAVA v10.3: Reštartuj monitorovanie AŽ PO uložení --- */
-            if (!fromDrag) { // Ak to bolo volané z "Uložiť Hranice"
+            if (!fromDrag) {
                 currentBtcPrice = 0; 
                 firstSuccessfulFetch = false; 
-                applyCurrentCoinSettings(true); // true = reštartuj monitorovanie
+                applyCurrentCoinSettings(true);
             }
         }
 
@@ -1005,18 +964,16 @@
             }
         }
 
-        /* --- NOVÉ: Funkcie pre Obľúbené --- */
+        /* --- Funkcie pre Obľúbené --- */
 
-        /* Vykreslí zoznam obľúbených */
         function renderFavorites() {
-            favoritesBar.innerHTML = ''; /* Vyčisti staré */
+            favoritesBar.innerHTML = '';
             favorites.forEach(symbol => {
                 const btn = document.createElement('button');
                 btn.className = 'favorite-btn';
                 btn.dataset.action = "select";
                 btn.dataset.symbol = symbol;
                 
-                /* Zvýrazni aktívny */
                 if (symbol === currentCoinSymbol) {
                     btn.classList.add('active');
                 }
@@ -1039,7 +996,6 @@
             });
         }
 
-        /* Kliknutie na Obľúbené (delegované) */
         favoritesBar.addEventListener('click', (e) => {
             const targetElement = e.target.closest('[data-action]');
             if (!targetElement) return;
@@ -1049,7 +1005,6 @@
 
             if (!action || !symbol) return;
             
-            /* Zabráň duplicitnému kliknutiu */
             if (action === 'select' && symbol === currentCoinSymbol) return;
 
             if (action === 'select') {
@@ -1059,59 +1014,37 @@
             }
         });
 
-        /* OPRAVA (v10.1): Zjednodušená funkcia, spolieha sa na opravu globálnych nastavení */
         function selectFavorite(symbol) {
-            /* 1. Načítaj aktuálny interval a API PREDTÝM, ako zavoláš saveSettings */
             globalSettings.intervalSeconds = parseInt(intervalSlider.value);
             globalSettings.apiSource = apiSourceSelect.value;
             
-            /* 2. Nastav nový coin */
-            /* OPRAVA v10.3: Nechceme, aby sa input na pridávanie menil pri výbere */
-            /* coinSymbolInput.value = symbol; */ 
             currentCoinSymbol = symbol; 
             
-            /* 3. Prekresli UI obľúbených (zvýrazní sa nový) */
             renderFavorites(); 
             
-            /* 4. Aplikuj nastavenia pre coin (alebo ich vymaž ak neexistujú) */
-            applyCurrentCoinSettings(true); /* true = je to nový coin, reštartuj */
+            applyCurrentCoinSettings(true); 
 
-            /* 5. Ulož zmenu (posledný coin A NOVÝ INTERVAL) do globálnych nastavení */
-            /* OPRAVA v10.7: Nemeníme coinSettings, iba globálne (posledný coin) */
-            /* Tým sa zabráni uloženiu {low: 0, high: 0} a povolí sa 0.1% reset */
             saveGlobalSettingsOnly(); 
         }
 
-        /* OPRAVA (v10.2): Odstráni obľúbenú položku */
         function removeFavorite(symbol) {
-            /* 1. Načítaj aktuálny interval a API (urobí to saveGlobalSettingsOnly) */
-
-            /* 2. Odstráň z poľa */
             favorites = favorites.filter(f => f !== symbol);
             
-            /* 3. Ak mažeme aktívny coin, prepni na default */
             if (currentCoinSymbol === symbol) {
                  coinSymbolInput.value = 'BTCUSDT';
                  currentCoinSymbol = 'BTCUSDT';
-                 applyCurrentCoinSettings(false); // isNewCoin = false, nespustí reštart
+                 applyCurrentCoinSettings(false);
             }
             
-            /* 4. Prekresli a ulož */
             renderFavorites();
-            saveGlobalSettingsOnly(); // <-- NOVÉ
+            saveGlobalSettingsOnly();
         }
 
-        /* OPRAVA (v10.6): Pridá obľúbenú položku a prepne na ňu */
         function addFavorite() {
-            /* 1. Pridaj do poľa */
             const newSymbol = coinSymbolInput.value.toUpperCase().trim();
             if (newSymbol && !favorites.includes(newSymbol)) {
                 favorites.push(newSymbol);
-                
-                /* 2. Vyčisti input */
                 coinSymbolInput.value = ''; 
-                
-                /* 3. Prepni na nový coin (toto automaticky uloží a spustí 0.1% reset) */
                 selectFavorite(newSymbol); 
             }
         }
@@ -1119,7 +1052,6 @@
 
 
         const alarmLoop = new Tone.Loop(time => {
-            // NOVÉ v10.15: Získaj stav ZVUKU pre AKTUÁLNY coin
             const currentCoinSoundEnabled = allCoinSettings[currentCoinSymbol]?.isAlarmSoundEnabled || false;
 
             if (isAlarmActive && currentCoinSoundEnabled && alarmSynth) {
@@ -1135,7 +1067,6 @@
                     return; 
                 }
                 
-                // NOVÉ v10.15: Kontrola zvuku až tu
                 const currentCoinSoundEnabled = allCoinSettings[currentCoinSymbol]?.isAlarmSoundEnabled || false;
                 if (!currentCoinSoundEnabled) return;
 
@@ -1151,28 +1082,24 @@
 
         /* --- Načítanie Ceny (Multi-API v3 - Dynamický Coin) --- */
         async function fetchBitcoinPrice() {
-            const source = globalSettings.apiSource; /* Použi globálne */
+            const source = globalSettings.apiSource;
             let symbol = currentCoinSymbol;
-            /* Špeciálne formátovanie pre rôzne API */
             let apiSymbol = symbol;
             
             let url = '';
             let price = 0;
-            // OPRAVA: Definícia premenných presunutá sem, aby bola prístupná aj v catch bloku
             let original_url = '';
             let response, textData;
 
             const controller = new AbortController();
-            // OPRAVA: Predĺžený timeout
-            const timeoutId = setTimeout(() => controller.abort(), 12000); /* 12 sekundový timeout */
+            const timeoutId = setTimeout(() => controller.abort(), 12000); /* 12s timeout */
             const options = { signal: controller.signal };
 
-            // OPRAVA: Šiesty pokus o proxy server. Skúsime https://cors.eu.org/
+            // Posledná oprava proxy: Použijeme https://cors.eu.org/
             const PROXY_PREFIX = 'https://cors.eu.org/';
 
             try {
                 let data;
-                // Premenné boli presunuté vyššie
 
                 switch (source) {
                     /* --- Perp / Swapy --- */
@@ -1302,7 +1229,7 @@
                         break;
                     case 'mexc-spot':
                         apiSymbol = symbol; /* Formát: BTCUSDT */
-                        original_url = `https://api.mexc.com/api/v3/ticker/price?symbol=${apiSymbol}`; // OPRAVA PREKLEPU (httpsV://)
+                        original_url = `https://api.mexc.com/api/v3/ticker/price?symbol=${apiSymbol}`;
                         url = `${PROXY_PREFIX}${original_url}`;
                         response = await fetch(url, options);
                         if (!response.ok) throw new Error(`Proxy/API error: ${response.status}`);
@@ -1345,7 +1272,6 @@
                         textData = await response.text();
                         data = JSON.parse(textData);
                         if (data.error && data.error.length > 0) throw new Error(`Kraken API chyba: ${data.error[0]}`);
-                        /* Dynamické hľadanie kľúča v odpovedi */
                         const resultKey = Object.keys(data.result || {})[0];
                         if (!resultKey || !data.result[resultKey] || !data.result[resultKey].c) throw new Error("Neplatná odpoveď Kraken");
                         price = parseFloat(data.result[resultKey].c[0]);
@@ -1389,7 +1315,7 @@
                         throw new Error(`Neznámy zdroj API: ${source}`);
                 }
                 
-                clearTimeout(timeoutId); /* Zruš timeout ak bolo úspešné */
+                clearTimeout(timeoutId);
 
                 if (isNaN(price) || price <= 0) {
                     throw new Error("Načítaná cena je neplatná.");
@@ -1398,86 +1324,80 @@
                 return price;
 
             } catch (error) {
-                clearTimeout(timeoutId); /* Zruš timeout aj pri chybe */
+                clearTimeout(timeoutId);
                 if (error.name === 'AbortError') {
                     throw new Error("Timeout: API neodpovedalo včas.");
                 }
-                // Pridanie lepšieho logovania chýb
                 console.error(`Chyba pri načítaní ceny z ${source} (${original_url || url}):`, error);
-                // Ak bola chyba parsovania, zaloguj text
                 if (error instanceof SyntaxError) {
                      console.error("Chybný text (nebol JSON):", textData);
                 }
-                throw error; /* Poslať chybu ďalej */
+                throw error;
             }
         }
         
         /* --- Hlavná Logika Alarmu --- */
-        /* OPRAVA v10.18: Vyčistenie od skopírovaného kódu */
         async function checkPriceAndAlert() {
             try {
                 const price = await fetchBitcoinPrice();
-                currentBtcPrice = price; /* Ulož aktuálnu cenu */
+                currentBtcPrice = price;
 
-                /* Aktualizuj UI */
                 priceDisplay.textContent = formatSkNumber(price); 
                 apiSourceDisplay.textContent = `Zdroj: ${apiSourceSelect.options[apiSourceSelect.selectedIndex].text}`;
                 updateMonitoringStatus('online');
+                updateResetButtonText(); // ZAVOLAJ AKTUALIZÁCIU TEXTU TLAČIDLA
 
                 let low = parseLocaleNumber(lowThresholdInput.value) || 0;
                 let high = parseLocaleNumber(highThresholdInput.value) || 0;
                 
-                /* --- Logika: Automatické vyplnenie, ak sú hranice prázdne (0.1%) --- */
-                /* OPRAVA v10.1: Táto logika je teraz správne spustená vďaka oprave v saveSettings */
+                /* --- Logika: Automatické vyplnenie (POUŽÍVA DYNAMICKÝ SPREAD) --- */
                 if (!firstSuccessfulFetch && price > 0) {
-                    firstSuccessfulFetch = true; /* Označ prvé úspešné načítanie */
+                    firstSuccessfulFetch = true;
                     
-                    /* Skontroluj, či polia *stále* nemajú hodnoty */
                     const existingLow = parseLocaleNumber(lowThresholdInput.value) || 0;
                     const existingHigh = parseLocaleNumber(highThresholdInput.value) || 0;
                     
                     if (existingLow <= 0 || existingHigh <= 0) {
-                        low = price * (1 - 0.001); /* 0.1% pod */
-                        high = price * (1 + 0.001); /* 0.1% nad */
                         
-                        /* Vynúť minimum */
+                        // ZÍSKAJ DYNAMICKÝ SPREAD
+                        const dynamicSpread = getDynamicSpread(price);
+                        const spreadPercentageText = (dynamicSpread * 100).toFixed(1);
+
+                        low = price * (1 - dynamicSpread);
+                        high = price * (1 + dynamicSpread);
+                        
                         low = Math.max(MIN_PRICE, low);
                         
                         lowThresholdInput.value = formatSkNumber(low);
                         highThresholdInput.value = formatSkNumber(high);
                         
-                        /* Zavolaj saveSettings, aby sa tieto nové 0.1% hranice */
-                        saveSettings(true); /* true = bez reštartu */
+                        saveSettings(true); // true = bez reštartu
                         
-                        /* Vráťme, aby sa to skontrolovalo v ďalšom cykle */
+                        // Loguj dynamickú zmenu
+                        logToJournal(`Automaticky nastavený ${spreadPercentageText}% limit pre ${currentCoinSymbol}.`);
+                        
                         return;
                     }
                 }
                 
                 updatePriceAxis(price, low, high, forceProportionalUpdate); 
-                forceProportionalUpdate = false; /* Resetuj vynútenie */
-
-                /* TOTO BOLO ZLE - KÓD Z SAVESETTINGS BOL TU */
+                forceProportionalUpdate = false;
                 
-                // NOVÉ v10.15: Získaj stav alarmu pre AKTUÁLNY coin
                 const currentCoinAlarmEnabled = allCoinSettings[currentCoinSymbol]?.isAlarmSystemEnabled || false;
 
-                /* --- Logika Alarmu (KONTROLA PREPÍNAČA) --- */
-                // UPRAVENÉ v10.17: Kontroluj Master a Per-Coin
+                /* --- Logika Alarmu --- */
                 if (!globalSettings.isMasterAlarmEnabled || !currentCoinAlarmEnabled) { 
-                    return; /* Alarm je vypnutý (buď centrálne alebo pre coin), nič nekontroluj */
+                    return;
                 }
 
                 if (isAlarmMuted) {
-                    /* Ak je alarm stíšený, len kontroluj, či sa cena vrátila do normálu */
                     if (price > low && price < high && low > 0) {
                         isAlarmMuted = false;
                     }
-                    return; /* Nespúšťaj alarm */
+                    return;
                 }
 
                 if (!isAlarmActive) {
-                    /* Použi formátované hodnoty pre hlásenie */
                     const formattedPrice = formatSkNumber(price);
                     const formattedLow = formatSkNumber(low);
                     const formattedHigh = formatSkNumber(high);
@@ -1494,6 +1414,7 @@
                 console.error("Chyba v cykle kontroly ceny:", error);
                 priceDisplay.textContent = "... (Chyba)"; 
                 updateMonitoringStatus('error', error.message);
+                updateResetButtonText(); // Aktualizuj text aj pri chybe
                 
                 const lowVal = parseLocaleNumber(lowThresholdInput.value) || 0;
                 const highVal = parseLocaleNumber(highThresholdInput.value) || 0;
@@ -1502,26 +1423,23 @@
         }
         
         function triggerAlarm(message) {
-            // NOVÉ v10.15: Získaj stav alarmu pre AKTUÁLNY coin
             const currentCoinAlarmEnabled = allCoinSettings[currentCoinSymbol]?.isAlarmSystemEnabled || false;
 
-            /* Kontrola prepínača (UPRAVENÉ v10.17) */
             if (!globalSettings.isMasterAlarmEnabled || !currentCoinAlarmEnabled) return; 
             if (isAlarmActive) return; 
             
             isAlarmActive = true;
-            isAlarmMuted = true; /* Automaticky stíšiť */
+            isAlarmMuted = true;
             
             alarmMessage.textContent = message;
             alarmModal.classList.remove('hidden');
             
-            // NOVÉ v10.15: Získaj stav ZVUKU pre AKTUÁLNY coin
             const currentCoinSoundEnabled = allCoinSettings[currentCoinSymbol]?.isAlarmSoundEnabled || false;
             if (currentCoinSoundEnabled) {
                 playAlarmSound(); 
             }
             
-            stopMonitoring(false); /* Nezastavuj odpočítavanie */
+            stopMonitoring(false);
         }
 
         window.dismissAlarm = function() {
@@ -1534,21 +1452,16 @@
 
         /* --- Ovládanie Monitorovania --- */
         function startMonitoring() {
-            /* 1. Zastav akékoľvek prebiehajúce intervaly */
             stopMonitoring(true); 
 
-            /* 2. Načítaj aktuálny interval zo slideru */
             currentIntervalSeconds = parseInt(globalSettings.intervalSeconds);
             secondsRemaining = currentIntervalSeconds; 
             countdownTimer.textContent = `${secondsRemaining}s`;
 
-            /* 3. Spusti prvú kontrolu okamžite */
             checkPriceAndAlert();
 
-            /* 4. Nastav nový interval pre opakovanú kontrolu cien */
             priceCheckInterval = setInterval(checkPriceAndAlert, currentIntervalSeconds * 1000);
             
-            /* 5. Spusti nový interval pre odpočítavanie (každú sekundu) */
             countdownInterval = setInterval(updateCountdown, 1000);
         }
 
@@ -1563,11 +1476,10 @@
             }
         }
         
-        /* --- Funkcia pre Odpočítavanie --- */
         function updateCountdown() {
             secondsRemaining--;
             if (secondsRemaining < 0) {
-                secondsRemaining = currentIntervalSeconds - 1; /* Reset */
+                secondsRemaining = currentIntervalSeconds - 1;
                 if (secondsRemaining < 0) secondsRemaining = 0; 
             }
             countdownTimer.textContent = `${secondsRemaining}s`;
@@ -1594,48 +1506,49 @@
             }
         }
         
-        /* --- Funkcia na vynútené prekreslenie osi (Recentrovanie) --- */
         function forceRedrawAxis() {
             forceProportionalUpdate = true;
             
-            /* NOVÉ v10.6: Recentrovať teraz tiež uloží aktuálne hodnoty z polí */
             formatInputAsSk({ target: lowThresholdInput });
             formatInputAsSk({ target: highThresholdInput });
-            saveSettings(true); // true = fromDrag (uloží, ale nereštartuje monitoring)
+            saveSettings(true);
             
             checkPriceAndAlert(); 
         }
 
-        /* --- NOVÁ FUNKCIA: Hard Reset na 0.1% --- */
+        /* --- FUNKCIA "Hard Reset" (TERAZ DYNAMICKÁ) --- */
         function hardResetToPointOnePercent() {
             initializeAudio();
             if (currentBtcPrice <= 0) {
-                logToJournal("Chyba: Hard Reset 0.1% nie je možný, cena nie je načítaná.");
+                logToJournal("Chyba: Hard Reset nie je možný, cena nie je načítaná.");
                 return;
             }
 
-            // 1. Vypočítaj nové hodnoty
-            let newLow = currentBtcPrice * (1 - 0.001);
-            let newHigh = currentBtcPrice * (1 + 0.001);
+            // 1. ZÍSKAJ DYNAMICKÝ SPREAD
+            const dynamicSpread = getDynamicSpread(currentBtcPrice);
+            const spreadPercentageText = (dynamicSpread * 100).toFixed(1);
+
+            // 2. Vypočítaj nové hodnoty
+            let newLow = currentBtcPrice * (1 - dynamicSpread);
+            let newHigh = currentBtcPrice * (1 + dynamicSpread);
             newLow = Math.max(MIN_PRICE, newLow); // Ochrana
 
-            // 2. Aktualizuj polia
+            // 3. Aktualizuj polia
             lowThresholdInput.value = formatSkNumber(newLow);
             highThresholdInput.value = formatSkNumber(newHigh);
             
-            // 3. Uloží a zaloguje nové hodnoty
-            // (true = fromDrag, ne-reštartuje monitoring, ale uloží coin a globálne nastavenia)
+            // 4. Uloží a zaloguje nové hodnoty
             saveSettings(true); 
 
-            // 4. Okamžite prekresli os
+            // 5. Okamžite prekresli os
             updatePriceAxis(currentBtcPrice, newLow, newHigh, true); // true = force proportional
             
-            // 5. Pridaj explicitný log
-            logToJournal(`Hard Reset 0.1% vykonaný pre ${currentCoinSymbol}.`);
+            // 6. Pridaj explicitný log s novým percentom
+            logToJournal(`Hard Reset ${spreadPercentageText}% vykonaný pre ${currentCoinSymbol}.`);
         }
 
 
-        /* --- Funkcia na vykreslenie osi (OPRAVENÁ PRE SANDUSDT v6) --- */
+        /* --- Funkcia na vykreslenie osi --- */
         function updatePriceAxis(current, low, high, forceProportional = false) {
             let p_axisMin, p_axisMax, p_axisRange;
             const mainLabelPercents = []; 
@@ -1645,24 +1558,20 @@
             let min, max;
 
             /* 1. Nájdi min a max pre os */
-            
-            /* TLAČIDLO RECENTROVAŤ MÁ PREDNOSŤ */
             if (forceProportional) {
                 if (low > 0 && high > 0 && high > low) {
                     min = low;
                     max = high;
                 } else {
-                    min = (current > 0 ? current * 0.95 : 0); /* Oprava na 0 */
-                    max = (current > 0 ? current * 1.05 : 100); /* Oprava na 100 */
+                    min = (current > 0 ? current * 0.95 : 0);
+                    max = (current > 0 ? current * 1.05 : 100);
                 }
                 
                 if (effectiveCurrent === 0) {
                      effectiveCurrent = (min + max) / 2;
                 }
             } 
-            /* Automatická logika (ak sa NEKLIKLO na recentrovať) */
             else {
-                /* Ak sú hranice platné, použi ich */
                 if (low > 0 && high > 0 && high > low) {
                     min = low;
                     max = high;
@@ -1670,9 +1579,6 @@
                          effectiveCurrent = (low + high) / 2;
                     }
                     
-                    /* Ak je cena mimo hraníc, ALEBO sa graf "stlačil" */
-                    /* (rozsah hraníc je menej ako 30% celkového zobrazeného rozsahu) */
-                    /* Musíme rozšíriť os, aby bola cena viditeľná */
                     const isOutside = (effectiveCurrent < min || effectiveCurrent > max);
                     const currentAxisRange = axisMax - axisMin;
                     const thresholdRange = max - min;
@@ -1681,32 +1587,25 @@
                         min = Math.min(min, effectiveCurrent);
                         max = Math.max(max, effectiveCurrent);
                     }
-                    /* Ak nie je vonku, NECHAJ min/max na low/high (proporčné zobrazenie) */
 
                 } else if (effectiveCurrent > 0) {
-                    /* Ak hranice nie sú platné, centruj okolo aktuálnej ceny */
-                    min = effectiveCurrent * 0.95; /* 5% pod */
-                    max = effectiveCurrent * 1.05; /* 5% nad */
+                    min = effectiveCurrent * 0.95;
+                    max = effectiveCurrent * 1.05;
                 } else {
-                    /* Núdzové hodnoty, ak je všetko 0 */
                     min = 0; 
-                    max = 100; /* Zmena z 50k/60k */
+                    max = 100;
                     effectiveCurrent = 50;
                 }
             }
 
-            /* 2. Pridaj padding proporčne k rozsahu MIN-MAX */
-            /* OPRAVA: Problém so SANDUSDT bol tu */
+            /* 2. Pridaj padding */
             let range = Math.max(max - min, 0);
             if (range <= 0) {
-                /* Ak je rozsah neplatný (napr. min=0, max=0), vytvor núdzový rozsah */
-                /* založený na aktuálnej cene, alebo 100 ak cena nie je. */
-                range = (effectiveCurrent > 0) ? effectiveCurrent * 0.2 : 100; /* 20% rozsahu, alebo 100 */
+                range = (effectiveCurrent > 0) ? effectiveCurrent * 0.2 : 100;
             }
             
-            const padding = range * 0.15; /* 15% padding na každú stranu */
+            const padding = range * 0.15;
             
-            /* OPRAVA: Vynútenie minimálnej osi na 0 */
             p_axisMin = Math.max(0, min - padding); 
             p_axisMax = max + padding;
             p_axisRange = p_axisMax - p_axisMin;
@@ -1722,8 +1621,7 @@
             if (low > 0) mainLabelPercents.push(lowPercent);
             if (high > 0) mainLabelPercents.push(highPercent);
 
-            /* 4. Aktualizuj pozície a viditeľnosť (Použi SK formátovač) */
-            /* Delta (rozdiel) */
+            /* 4. Aktualizuj pozície a viditeľnosť */
             const deltaLow = (current > 0 && low > 0) ? current - low : 0;
             const deltaHigh = (current > 0 && high > 0) ? high - current : 0;
 
@@ -1738,7 +1636,6 @@
                 document.getElementById('current-label').classList.add('hidden');
             }
             
-            /* Zobrazuj vždy, aj ak je 0 */
             document.getElementById('low-dot').style.bottom = `${clamp(lowPercent)}%`;
             document.getElementById('low-label').style.bottom = `${clamp(lowPercent)}%`;
             const deltaLowText = (deltaLow > 0) ? ` (-${skDeltaFormatter.format(deltaLow)})` : ` (+${skDeltaFormatter.format(Math.abs(deltaLow))})`;
@@ -1762,33 +1659,28 @@
             document.getElementById('high-label').classList.remove('hidden');
             
 
-            /* 5. Ulož globálne pre D&D a Grid (VŽDY) */
+            /* 5. Ulož globálne pre D&D a Grid */
             axisMin = p_axisMin;
             axisMax = p_axisMax;
             axisRange = p_axisRange;
             
-            /* 6. Zavolaj grid (VŽDY) */
             updateAxisGrid(axisMin, axisMax, axisRange, mainLabelPercents);
         }
 
-        /* --- Funkcia pre vykreslenie orientačných čiar (verzia 3) --- */
-        /* OPRAVA v10.16: Obnovenie chýbajúceho kódu */
         function updateAxisGrid(p_axisMin, p_axisMax, p_axisRange, mainLabelPercents) {
             gridLinesContainer.innerHTML = '';
-            const numLines = 5; /* Počet čiar */
+            const numLines = 5;
             if (p_axisRange <= 0 || isNaN(p_axisRange)) return; 
             
             const step = p_axisRange / (numLines - 1);
 
             for (let i = 0; i < numLines; i++) {
-                /* OPRAVA: Vynútenie nezáporných čísel na osi */
                 const price = Math.max(0, p_axisMin + (i * step));
                 const percent = (i / (numLines - 1)) * 100;
 
-                /* Kontrola kolízie s hlavnými štítkami */
                 let collision = false;
                 for (const mainPercent of mainLabelPercents) {
-                    if (!isNaN(mainPercent) && Math.abs(percent - mainPercent) < 7) { /* 7% tolerancia */
+                    if (!isNaN(mainPercent) && Math.abs(percent - mainPercent) < 7) {
                         collision = true;
                         break;
                     }
@@ -1801,7 +1693,7 @@
                     
                     const labelEl = document.createElement('span');
                     labelEl.className = 'axis-grid-label-text';
-                    labelEl.textContent = formatSkNumber(price); /* SK formát */
+                    labelEl.textContent = formatSkNumber(price);
 
                     itemEl.appendChild(labelEl); 
                     gridLinesContainer.appendChild(itemEl);
@@ -1809,15 +1701,13 @@
             }
         }
 
-        /* --- NOVÁ FUNKCIA v10.17: Prepínač "Všetky Alarmy" --- */
+        /* --- Prepínače --- */
         function updateMasterAlarmStatus(doSave = true) {
-            // 1. Prepni stav (ak je to klik)
             if (doSave) {
                 globalSettings.isMasterAlarmEnabled = !globalSettings.isMasterAlarmEnabled;
                 initializeAudio(); 
             }
             
-            // 2. Aktualizuj vizuál prepínača
             if (globalSettings.isMasterAlarmEnabled) {
                 masterAlarmToggle.classList.add('toggled'); 
                 masterAlarmToggle.setAttribute('aria-checked', 'true');
@@ -1825,45 +1715,36 @@
                 masterAlarmToggle.classList.remove('toggled'); 
                 masterAlarmToggle.setAttribute('aria-checked', 'false');
                 
-                // Ak vypíname master, vypni aj aktívny alarm
                 if (isAlarmActive) {
                     dismissAlarm();
                 }
             }
 
-            // 3. Ulož nastavenie (len ak to bolo volané z kliku)
             if (doSave) {
-                saveGlobalSettingsOnly(); // Uloží iba globálne nastavenia
+                saveGlobalSettingsOnly();
             }
         }
 
-
-        /* --- Nová funkcia pre prepínač "Alarm Aktívny" (OPRAVENÁ LOGIKA v10.15) --- */
         function updateAlarmSystemStatus(doSave = true, explicitState = null) {
-            let currentState = false; // Predvolený stav
+            let currentState = false;
 
-            // Zisti aktuálny stav z cache, ak existuje
             if (allCoinSettings[currentCoinSymbol]) {
                 currentState = allCoinSettings[currentCoinSymbol].isAlarmSystemEnabled || false;
             }
 
             let newState;
             if (explicitState !== null) {
-                // Stav je vynútený (napr. pri načítaní)
                 newState = explicitState;
             } else {
-                // Stav je prepnutý (kliknutím)
                 newState = !currentState;
                 initializeAudio();
             }
 
-            // 1. Aktualizuj cache
             if (!allCoinSettings[currentCoinSymbol]) {
                 allCoinSettings[currentCoinSymbol] = {};
             }
             allCoinSettings[currentCoinSymbol].isAlarmSystemEnabled = newState;
             
-            /* 2. Aktualizuj vizuál prepínača */
             if (newState) {
                 alarmEnabledToggle.classList.add('toggled'); 
                 alarmEnabledToggle.setAttribute('aria-checked', 'true');
@@ -1876,39 +1757,31 @@
                 }
             }
 
-            /* 3. Ulož nastavenie (len ak to bolo volané z kliku) */
             if (doSave) {
-                // Uloží VŠETKY nastavenia pre coin (vrátane LOW/HIGH)
-                saveSettings(true); // true = fromDrag (uloží, ale nereštartuje monitoring)
+                saveSettings(true);
             }
         }
         
-        /* --- Nová funkcia pre prepínač "Zvuk Alarmu" (Mute) (OPRAVENÁ LOGIKA v10.15) --- */
         function updateAlarmSoundStatus(doSave = true, explicitState = null) {
-            let currentState = false; // Predvolený stav
+            let currentState = false;
 
-            // Zisti aktuálny stav z cache, ak existuje
             if (allCoinSettings[currentCoinSymbol]) {
                 currentState = allCoinSettings[currentCoinSymbol].isAlarmSoundEnabled || false;
             }
 
             let newState;
             if (explicitState !== null) {
-                // Stav je vynútený (napr. pri načítaní)
                 newState = explicitState;
             } else {
-                // Stav je prepnutý (kliknutím)
                 newState = !currentState;
                 initializeAudio();
             }
 
-            // 1. Aktualizuj cache
             if (!allCoinSettings[currentCoinSymbol]) {
                 allCoinSettings[currentCoinSymbol] = {};
             }
             allCoinSettings[currentCoinSymbol].isAlarmSoundEnabled = newState;
             
-            /* 2. Aktualizuj vizuál prepínača */
             if (newState) {
                 alarmSoundToggle.classList.add('toggled'); 
                 alarmSoundToggle.setAttribute('aria-checked', 'true');
@@ -1917,10 +1790,8 @@
                 alarmSoundToggle.setAttribute('aria-checked', 'false');
             }
 
-            /* 3. Ulož nastavenie (len ak to bolo volané z kliku) */
             if (doSave) {
-                // Uloží VŠETKY nastavenia pre coin (vrátane LOW/HIGH)
-                saveSettings(true); // true = fromDrag (uloží, ale nereštartuje monitoring)
+                saveSettings(true);
             }
         }
 
@@ -1932,7 +1803,6 @@
 
             let numValue = parseLocaleNumber(value);
             
-            /* OPRAVA: Vynútenie minima pre LOW pole */
             if (input.id === 'low-threshold' && !isNaN(numValue) && numValue < MIN_PRICE) {
                 numValue = MIN_PRICE;
             }
@@ -1966,7 +1836,7 @@
             formatInputAsSk({ target: lowThresholdInput });
             formatInputAsSk({ target: highThresholdInput });
             
-            saveSettings(false); /* false = volané z "Uložiť" */
+            saveSettings(false);
         });
         
         recenterButton.addEventListener('click', () => {
@@ -1974,10 +1844,8 @@
             forceRedrawAxis(); 
         });
 
-        /* NOVÉ: Listener pre Hard Reset */
         hardResetButton.addEventListener('click', hardResetToPointOnePercent);
 
-        /* NOVÉ v10.17: Listener pre Master Alarm */
         masterAlarmToggle.addEventListener('click', () => {
             updateMasterAlarmStatus(true);
         });
@@ -1992,17 +1860,15 @@
 
         intervalSlider.addEventListener('input', (e) => {
             intervalValue.textContent = `${e.target.value}s`;
-            globalSettings.intervalSeconds = parseInt(e.target.value); /* Aktualizuj globálne */
-            /* Neukladáme hneď, až pri 'Uložiť' */
+            globalSettings.intervalSeconds = parseInt(e.target.value);
         });
         
-        /* Listenery pre inputy (formátovanie) */
         lowThresholdInput.addEventListener('blur', formatInputAsSk);
         highThresholdInput.addEventListener('blur', formatInputAsSk);
         lowThresholdInput.addEventListener('focus', storeLastValid);
         highThresholdInput.addEventListener('focus', storeLastValid);
         
-        /* --- Nové D&D Listeners --- */
+        /* --- D&D Listeners --- */
         function handleDragStart(e, type) {
             e.preventDefault();
             initializeAudio(); 
@@ -2043,19 +1909,17 @@
             if (axisRange <= 0 || isNaN(axisRange)) return; 
             let newPrice = axisMin + (percent / 100) * axisRange;
 
-            /* --- OBMEDZENIA POHYBU --- */
             if (isDragging === 'low') {
                 if (newPrice >= currentBtcPrice) {
-                    newPrice = currentBtcPrice; /* Zastav na aktuálnej cene */
+                    newPrice = currentBtcPrice;
                 }
-                /* OPRAVA: Vynútenie minima */
                 newPrice = Math.max(MIN_PRICE, newPrice); 
-                lowThresholdInput.value = formatSkNumber(newPrice); /* Formátovanie */
+                lowThresholdInput.value = formatSkNumber(newPrice);
             } else if (isDragging === 'high') {
                 if (newPrice <= currentBtcPrice) {
-                    newPrice = currentBtcPrice; /* Zastav na aktuálnej cene */
+                    newPrice = currentBtcPrice;
                 }
-                highThresholdInput.value = formatSkNumber(newPrice); /* Formátovanie */
+                highThresholdInput.value = formatSkNumber(newPrice);
             }
             
             const lowVal = parseLocaleNumber(lowThresholdInput.value) || 0;
@@ -2072,31 +1936,25 @@
             document.removeEventListener('touchmove', handleDragMove);
             document.removeEventListener('touchend', handleDragEnd);
             
-            /* Vynúť formátovanie pri pustení */
             formatInputAsSk({ target: lowThresholdInput });
             formatInputAsSk({ target: highThresholdInput });
 
-            /* Ulož nové nastavenia */
-            saveSettings(true); /* true = volané z D&D */
+            saveSettings(true);
         }
         
-        /* Pripoj D&D listeners na štítky */
         document.getElementById('low-label').addEventListener('mousedown', (e) => handleDragStart(e, 'low'));
         document.getElementById('low-label').addEventListener('touchstart', (e) => handleDragStart(e, 'low'));
         document.getElementById('high-label').addEventListener('mousedown', (e) => handleDragStart(e, 'high'));
         document.getElementById('high-label').addEventListener('touchstart', (e) => handleDragStart(e, 'high'));
         
-        /* NOVÉ: Listener pre pridanie obľúbených */
         addFavoriteButton.addEventListener('click', addFavorite);
 
-        /* NOVÉ v10.6: Listener pre Enter v poli Pridať Coin */
         coinSymbolInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
-                e.preventDefault(); // Zabrání odoslaniu formulára (ak by nejaký bol)
+                e.preventDefault();
                 addFavorite();
             }
         });
-
 
         /* --- Spustenie aplikácie --- */
         initialize();
