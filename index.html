@@ -255,6 +255,38 @@
         #add-favorite-btn:hover {
             background-color: #15803D; /* green-700 */
         }
+
+        /* OPRAVA v10.13: Placeholder je teraz veľmi tmavý (slabo viditeľný) */
+        #favorite-symbol-input::-webkit-input-placeholder,
+        #low-threshold::-webkit-input-placeholder,
+        #high-threshold::-webkit-input-placeholder {
+            color: #1F2937; /* gray-800 */
+            opacity: 1;
+        }
+        #favorite-symbol-input::-moz-placeholder,
+        #low-threshold::-moz-placeholder,
+        #high-threshold::-moz-placeholder {
+            color: #1F2937; /* gray-800 */
+            opacity: 1;
+        }
+        #favorite-symbol-input:-ms-input-placeholder,
+        #low-threshold:-ms-input-placeholder,
+        #high-threshold:-ms-input-placeholder {
+            color: #1F2937; /* gray-800 */
+            opacity: 1;
+        }
+        #favorite-symbol-input::-ms-input-placeholder,
+        #low-threshold::-ms-input-placeholder,
+        #high-threshold::-ms-input-placeholder {
+            color: #1F2937; /* gray-800 */
+            opacity: 1;
+        }
+        #favorite-symbol-input::placeholder,
+        #low-threshold::placeholder,
+        #high-threshold::placeholder {
+            color: #1F2937; /* gray-800 */
+            opacity: 1;
+        }
     </style>
 </head>
 <body class="h-full p-4 md:p-8 bg-gray-900 text-gray-200">
@@ -340,7 +372,8 @@
                 <div class="bg-gray-800 shadow-xl rounded-lg p-4 sticky top-8">
                       <h2 class="text-xl font-bold text-white mb-4">Obľúbené</h2>
                       <!-- Pridanie coinu -->
-                      <div class="mb-4">
+                      <!-- ZMENA: Zväčšená medzera (mb-6) -->
+                      <div class="mb-6">
                         <label for="favorite-symbol-input" class="block text-sm font-medium text-gray-300 mb-2">Pridať Coin</label>
                         <!-- ZMENA: Input už nie je v 'flex' -->
                         <input type="text" id="favorite-symbol-input" class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:ring-2 focus:ring-blue-500 mb-2" placeholder="napr. ETHUSDT">
