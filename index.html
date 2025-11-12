@@ -581,7 +581,8 @@
         const MIN_PRICE = 0.000001; /* Minimálna cena (proti bankrotu) */
 
         /* --- Synth pre Tone.js --- */
-        let alarmSynth;
+        let lowAlarmSynth, highAlarmSynth;
+        let lowAlarmLoop, highAlarmLoop;
 
         /* --- Elementy --- */
         const priceDisplay = document.getElementById('price-display');
@@ -609,29 +610,77 @@
         const favoritesBar = document.getElementById('favorites-list'); 
         const addFavoriteButton = document.getElementById('add-favorite-btn');
 
-        /* --- Formátovače Čísel (OPRAVA pre desatinné miesta) --- */
-        
-        const skNumberFormatter = new Intl.NumberFormat('sk-SK', {
-            style: 'decimal',
-            maximumFractionDigits: 8, 
-        });
-        
-        const skDeltaFormatter = new Intl.NumberFormat('sk-SK', {
-            style: 'decimal',
-            maximumFractionDigits: 8,
-        });
-        
         /* --- Formátovanie cien --- */
+        
+        /**
+         * Parsovanie čísla (akceptuje bodku aj čiarku)
+         */
         function parseLocaleNumber(stringNumber) {
             if (typeof stringNumber !== 'string') return parseFloat(stringNumber);
             const sanitized = stringNumber.replace(/\s/g, '').replace(',', '.');
             return parseFloat(sanitized);
         }
 
-        function formatSkNumber(price) {
+        /**
+         * NOVÝ Dynamický Formátovač Čísel (namiesto globálneho skNumberFormatter)
+         * Formátuje číslo na slovenský formát s dynamickým počtom des. miest.
+         */
+        function formatDynamicSkNumber(price) {
+            let options = {
+                style: 'decimal',
+                minimumFractionDigits: 2, // Vždy chceme aspoň 2
+                maximumFractionDigits: 2  // Predvolené na 2
+            };
+
+            if (price > 0) {
+                if (price >= 100) {
+                    options.maximumFractionDigits = 2; // napr. 87 910,78
+                } else if (price >= 1) {
+                    options.maximumFractionDigits = 3; // napr. 2,061
+                } else if (price >= 0.01) {
+                    options.maximumFractionDigits = 5; // napr. 0,01422
+                } else if (price >= 0.0001) {
+                    options.maximumFractionDigits = 6; // napr. 0,003392
+                } else {
+                    options.maximumFractionDigits = 8; // napr. 0,00005821
+                }
+            }
+            
             const safePrice = Math.max(0, price);
-            return skNumberFormatter.format(safePrice);
+            return new Intl.NumberFormat('sk-SK', options).format(safePrice);
         }
+        
+        /**
+         * NOVÝ Dynamický Formátovač pre DELTA (rozdiel)
+         * Používa podobnú logiku na formátovanie rozdielu cien.
+         */
+        function formatDynamicDelta(delta) {
+            let options = {
+                style: 'decimal',
+                minimumFractionDigits: 2, 
+                maximumFractionDigits: 4 // Predvolené
+            };
+            
+            const absDelta = Math.abs(delta);
+
+            if (absDelta > 0) {
+                if (absDelta >= 10) {
+                    options.maximumFractionDigits = 2;
+                } else if (absDelta >= 1) {
+                    options.maximumFractionDigits = 3;
+                } else if (absDelta >= 0.01) {
+                    options.maximumFractionDigits = 5;
+                } else if (absDelta >= 0.0001) {
+                    options.maximumFractionDigits = 6;
+                } else {
+                    options.maximumFractionDigits = 8;
+                }
+            }
+            
+            // Formátujeme vždy absolútnu hodnotu, znamienko sa pridáva v updatePriceAxis
+            return new Intl.NumberFormat('sk-SK', options).format(absDelta);
+        }
+
         
         /* Zápis do žurnálu */
         function logToJournal(message) {
@@ -645,12 +694,8 @@
             saveJournal.insertBefore(logEntry, saveJournal.firstChild);
         }
 
-        /* --- NOVÁ FUNKCIA: Dynamický Spread --- */
-        /**
-         * Vracia dynamický spread (napr. 0.001 pre 0.1%) na základe ceny coinu.
-         * @param {number} price - Aktuálna cena coinu.
-         * @returns {number} - Hodnota spreadu (napr. 0.01 pre 1%).
-         */
+        /* --- Dynamický Spread --- */
+        
         function getDynamicSpread(price) {
             if (price > 1000) {
                 return 0.0025; // 0.25% pre ceny > $1000 (napr. BTC)
@@ -661,9 +706,6 @@
             }
         }
         
-        /**
-         * Aktualizuje text na tlačidle "Reset" podľa aktuálneho dynamického spreadu.
-         */
         function updateResetButtonText() {
             if (currentBtcPrice > 0) {
                 const spread = getDynamicSpread(currentBtcPrice);
@@ -677,15 +719,14 @@
         /* --- Inicializácia Firebase --- */
         async function initialize() {
             try {
-                alarmSynth = new Tone.MembraneSynth().toDestination();
-
+                // Audio sa inicializuje neskôr pri interakcii
                 const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
                 const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
                 if (!firebaseConfig.apiKey) {
                     console.warn("Firebase config chýba. Aplikácia pobeží v lokálnom režime.");
                     updateMonitoringStatus('offline');
-                    loadGlobalSettings(); /* Načítaj lokálne (aj keď len predvolené) */
+                    loadGlobalSettings();
                     startMonitoring();
                     return;
                 }
@@ -695,7 +736,6 @@
                 auth = getAuth(app);
                 setLogLevel('Debug');
 
-                /* Prihlásenie používateľa */
                 onAuthStateChanged(auth, async (user) => {
                     if (user) {
                         userId = user.uid;
@@ -758,8 +798,9 @@
             let coinSpecificSoundEnabled = false;
 
             if (settings) {
-                lowThresholdInput.value = formatSkNumber(settings.low || 0);
-                highThresholdInput.value = formatSkNumber(settings.high || 0);
+                // POUŽI NOVÝ FORMÁTOVAČ
+                lowThresholdInput.value = formatDynamicSkNumber(settings.low || 0);
+                highThresholdInput.value = formatDynamicSkNumber(settings.high || 0);
                 
                 if(settings.low > 0) {
                    firstSuccessfulFetch = true;
@@ -779,7 +820,6 @@
             updateAlarmSystemStatus(false, coinSpecificAlarmEnabled);
             updateAlarmSoundStatus(false, coinSpecificSoundEnabled);
 
-            // Pri zmene coinu resetuj aj text tlačidla reset
             updateResetButtonText();
 
             if (isNewCoin) {
@@ -938,13 +978,15 @@
 
             if (coinSettingsToSave) {
                 const apiText = apiSourceSelect.options[apiSourceSelect.selectedIndex].text;
-                const btcPriceLog = currentBtcPrice > 0 ? ` | Cena: ${formatSkNumber(currentBtcPrice)}` : '';
+                // POUŽI NOVÝ FORMÁTOVAČ
+                const btcPriceLog = currentBtcPrice > 0 ? ` | Cena: ${formatDynamicSkNumber(currentBtcPrice)}` : '';
                 
                 if (triggerRecalc) {
                      logToJournal(`Spustené prepočítanie limitov pre ${symbolToSave}... (API: ${apiText} | Interval: ${globalSettings.intervalSeconds}s)`);
                 } else {
                     if (!fromDrag || (coinSettingsToSave.low > MIN_PRICE)) {
-                        const logMessage = `Uložené: ${symbolToSave} | LOW ${formatSkNumber(coinSettingsToSave.low)} | HIGH ${formatSkNumber(coinSettingsToSave.high)}${btcPriceLog} | Zdroj: ${apiText} | Interval: ${globalSettings.intervalSeconds}s`;
+                        // POUŽI NOVÝ FORMÁTOVAČ
+                        const logMessage = `Uložené: ${symbolToSave} | LOW ${formatDynamicSkNumber(coinSettingsToSave.low)} | HIGH ${formatDynamicSkNumber(coinSettingsToSave.high)}${btcPriceLog} | Zdroj: ${apiText} | Interval: ${globalSettings.intervalSeconds}s`;
                         logToJournal(logMessage);
                     }
                 }
@@ -976,14 +1018,74 @@
 
 
         /* --- Zvuk Alarmu (Tone.js) --- */
+        
+        function initializeAlarmSounds() {
+            if (!lowAlarmSynth) {
+                lowAlarmSynth = new Tone.MembraneSynth().toDestination(); // Hlboký, perkusívny
+            }
+            if (!highAlarmSynth) {
+                highAlarmSynth = new Tone.FMSynth({
+                    "harmonicity": 2.1,
+                    "modulationIndex": 8,
+                    "envelope": { "attack": 0.01, "decay": 0.1, "sustain": 0.05, "release": 0.3 },
+                    "modulationEnvelope": { "attack": 0.01, "decay": 0.05, "sustain": 0, "release": 0.2 }
+                }).toDestination(); // Jasnejší, FM synth
+            }
+
+            lowAlarmLoop = new Tone.Loop(time => {
+                const currentCoinSoundEnabled = allCoinSettings[currentCoinSymbol]?.isAlarmSoundEnabled || false;
+                if (isAlarmActive && currentCoinSoundEnabled && lowAlarmSynth) {
+                    lowAlarmSynth.triggerAttackRelease("C2", "8n", time);
+                    lowAlarmSynth.triggerAttackRelease("G1", "8n", time + 0.3);
+                }
+            }, "0.6s");
+
+            highAlarmLoop = new Tone.Loop(time => {
+                const currentCoinSoundEnabled = allCoinSettings[currentCoinSymbol]?.isAlarmSoundEnabled || false;
+                if (isAlarmActive && currentCoinSoundEnabled && highAlarmSynth) {
+                    highAlarmSynth.triggerAttackRelease("G5", "16n", time);
+                    highAlarmSynth.triggerAttackRelease("C6", "16n", time + 0.1);
+                }
+            }, "0.2s");
+        }
+
         function initializeAudio() {
             if (Tone.context.state !== 'running') {
                 Tone.start().then(() => {
                      console.log("Audio kontext spustený.");
+                     initializeAlarmSounds(); 
                 }).catch(e => {
                     console.warn("Audio kontext sa nepodarilo spustiť:", e);
                 });
+            } else if (!lowAlarmSynth) {
+                 initializeAlarmSounds();
             }
+        }
+
+        function playAlarmSound(alarmType) {
+            if (isAlarmActive) {
+                if (Tone.context.state !== 'running') {
+                    console.warn("Audio kontext nie je spustený! Zvuk nebude hrať.");
+                    return; 
+                }
+                
+                const currentCoinSoundEnabled = allCoinSettings[currentCoinSymbol]?.isAlarmSoundEnabled || false;
+                if (!currentCoinSoundEnabled) return;
+
+                if (alarmType === 'low' && lowAlarmLoop) {
+                    lowAlarmLoop.start(0);
+                } else if (alarmType === 'high' && highAlarmLoop) {
+                    highAlarmLoop.start(0);
+                }
+                
+                Tone.Transport.start();
+            }
+        }
+
+        function stopAlarmSound() {
+            if (lowAlarmLoop) lowAlarmLoop.stop(0);
+            if (highAlarmLoop) highAlarmLoop.stop(0);
+            Tone.Transport.stop();
         }
 
         /* --- Funkcie pre Obľúbené --- */
@@ -1072,36 +1174,6 @@
         }
         /* --- Koniec Obľúbených --- */
 
-
-        const alarmLoop = new Tone.Loop(time => {
-            const currentCoinSoundEnabled = allCoinSettings[currentCoinSymbol]?.isAlarmSoundEnabled || false;
-
-            if (isAlarmActive && currentCoinSoundEnabled && alarmSynth) {
-                alarmSynth.triggerAttackRelease("C5", "8n", time);
-                alarmSynth.triggerAttackRelease("G4", "8n", time + 0.25);
-            }
-        }, "0.5s");
-
-        function playAlarmSound() {
-            if (isAlarmActive) {
-                if (Tone.context.state !== 'running') {
-                    console.warn("Audio kontext nie je spustený! Zvuk nebude hrať.");
-                    return; 
-                }
-                
-                const currentCoinSoundEnabled = allCoinSettings[currentCoinSymbol]?.isAlarmSoundEnabled || false;
-                if (!currentCoinSoundEnabled) return;
-
-                Tone.Transport.start();
-                alarmLoop.start(0);
-            }
-        }
-
-        function stopAlarmSound() {
-            alarmLoop.stop(0);
-            Tone.Transport.stop();
-        }
-
         /* --- Načítanie Ceny (Multi-API v3 - Dynamický Coin) --- */
         async function fetchBitcoinPrice() {
             const source = globalSettings.apiSource;
@@ -1117,7 +1189,6 @@
             const timeoutId = setTimeout(() => controller.abort(), 12000); /* 12s timeout */
             const options = { signal: controller.signal };
 
-            // Posledná oprava proxy: Použijeme https://cors.eu.org/
             const PROXY_PREFIX = 'https://cors.eu.org/';
 
             try {
@@ -1364,15 +1435,15 @@
                 const price = await fetchBitcoinPrice();
                 currentBtcPrice = price;
 
-                priceDisplay.textContent = formatSkNumber(price); 
+                // POUŽI NOVÝ FORMÁTOVAČ
+                priceDisplay.textContent = formatDynamicSkNumber(price); 
                 apiSourceDisplay.textContent = `Zdroj: ${apiSourceSelect.options[apiSourceSelect.selectedIndex].text}`;
                 updateMonitoringStatus('online');
-                updateResetButtonText(); // ZAVOLAJ AKTUALIZÁCIU TEXTU TLAČIDLA
+                updateResetButtonText();
 
                 let low = parseLocaleNumber(lowThresholdInput.value) || 0;
                 let high = parseLocaleNumber(highThresholdInput.value) || 0;
                 
-                /* --- Logika: Automatické vyplnenie (POUŽÍVA DYNAMICKÝ SPREAD) --- */
                 if (!firstSuccessfulFetch && price > 0) {
                     firstSuccessfulFetch = true;
                     
@@ -1381,7 +1452,6 @@
                     
                     if (existingLow <= 0 || existingHigh <= 0) {
                         
-                        // ZÍSKAJ DYNAMICKÝ SPREAD
                         const dynamicSpread = getDynamicSpread(price);
                         const spreadPercentageText = (dynamicSpread * 100).toFixed(1);
 
@@ -1390,12 +1460,12 @@
                         
                         low = Math.max(MIN_PRICE, low);
                         
-                        lowThresholdInput.value = formatSkNumber(low);
-                        highThresholdInput.value = formatSkNumber(high);
+                        // POUŽI NOVÝ FORMÁTOVAČ
+                        lowThresholdInput.value = formatDynamicSkNumber(low);
+                        highThresholdInput.value = formatDynamicSkNumber(high);
                         
-                        saveSettings(true); // true = bez reštartu
+                        saveSettings(true);
                         
-                        // Loguj dynamickú zmenu
                         logToJournal(`Automaticky nastavený ${spreadPercentageText}% limit pre ${currentCoinSymbol}.`);
                         
                         return;
@@ -1407,7 +1477,6 @@
                 
                 const currentCoinAlarmEnabled = allCoinSettings[currentCoinSymbol]?.isAlarmSystemEnabled || false;
 
-                /* --- Logika Alarmu --- */
                 if (!globalSettings.isMasterAlarmEnabled || !currentCoinAlarmEnabled) { 
                     return;
                 }
@@ -1420,15 +1489,16 @@
                 }
 
                 if (!isAlarmActive) {
-                    const formattedPrice = formatSkNumber(price);
-                    const formattedLow = formatSkNumber(low);
-                    const formattedHigh = formatSkNumber(high);
+                    // POUŽI NOVÝ FORMÁTOVAČ
+                    const formattedPrice = formatDynamicSkNumber(price);
+                    const formattedLow = formatDynamicSkNumber(low);
+                    const formattedHigh = formatDynamicSkNumber(high);
                     const symbol = currentCoinSymbol;
 
                     if (price <= low && low > 0) {
-                        triggerAlarm(`Cena (${symbol}) klesla pod limit! (Cena: ${formattedPrice}, Limit: ${formattedLow})`);
+                        triggerAlarm(`Cena (${symbol}) klesla pod limit! (Cena: ${formattedPrice}, Limit: ${formattedLow})`, 'low');
                     } else if (price >= high && high > 0) {
-                        triggerAlarm(`Cena (${symbol}) stúpla nad limit! (Cena: ${formattedPrice}, Limit: ${formattedHigh})`);
+                        triggerAlarm(`Cena (${symbol}) stúpla nad limit! (Cena: ${formattedPrice}, Limit: ${formattedHigh})`, 'high');
                     }
                 }
 
@@ -1436,7 +1506,7 @@
                 console.error("Chyba v cykle kontroly ceny:", error);
                 priceDisplay.textContent = "... (Chyba)"; 
                 updateMonitoringStatus('error', error.message);
-                updateResetButtonText(); // Aktualizuj text aj pri chybe
+                updateResetButtonText();
                 
                 const lowVal = parseLocaleNumber(lowThresholdInput.value) || 0;
                 const highVal = parseLocaleNumber(highThresholdInput.value) || 0;
@@ -1444,7 +1514,7 @@
             }
         }
         
-        function triggerAlarm(message) {
+        function triggerAlarm(message, alarmType = 'low') {
             const currentCoinAlarmEnabled = allCoinSettings[currentCoinSymbol]?.isAlarmSystemEnabled || false;
 
             if (!globalSettings.isMasterAlarmEnabled || !currentCoinAlarmEnabled) return; 
@@ -1458,7 +1528,7 @@
             
             const currentCoinSoundEnabled = allCoinSettings[currentCoinSymbol]?.isAlarmSoundEnabled || false;
             if (currentCoinSoundEnabled) {
-                playAlarmSound(); 
+                playAlarmSound(alarmType);
             }
             
             stopMonitoring(false);
@@ -1546,26 +1616,21 @@
                 return;
             }
 
-            // 1. ZÍSKAJ DYNAMICKÝ SPREAD
             const dynamicSpread = getDynamicSpread(currentBtcPrice);
             const spreadPercentageText = (dynamicSpread * 100).toFixed(1);
 
-            // 2. Vypočítaj nové hodnoty
             let newLow = currentBtcPrice * (1 - dynamicSpread);
             let newHigh = currentBtcPrice * (1 + dynamicSpread);
-            newLow = Math.max(MIN_PRICE, newLow); // Ochrana
+            newLow = Math.max(MIN_PRICE, newLow); 
 
-            // 3. Aktualizuj polia
-            lowThresholdInput.value = formatSkNumber(newLow);
-            highThresholdInput.value = formatSkNumber(newHigh);
+            // POUŽI NOVÝ FORMÁTOVAČ
+            lowThresholdInput.value = formatDynamicSkNumber(newLow);
+            highThresholdInput.value = formatDynamicSkNumber(newHigh);
             
-            // 4. Uloží a zaloguje nové hodnoty
             saveSettings(true); 
 
-            // 5. Okamžite prekresli os
-            updatePriceAxis(currentBtcPrice, newLow, newHigh, true); // true = force proportional
+            updatePriceAxis(currentBtcPrice, newLow, newHigh, true); 
             
-            // 6. Pridaj explicitný log s novým percentom
             logToJournal(`Hard Reset ${spreadPercentageText}% vykonaný pre ${currentCoinSymbol}.`);
         }
 
@@ -1579,7 +1644,6 @@
             let effectiveCurrent = current;
             let min, max;
 
-            /* 1. Nájdi min a max pre os */
             if (forceProportional) {
                 if (low > 0 && high > 0 && high > low) {
                     min = low;
@@ -1620,7 +1684,6 @@
                 }
             }
 
-            /* 2. Pridaj padding */
             let range = Math.max(max - min, 0);
             if (range <= 0) {
                 range = (effectiveCurrent > 0) ? effectiveCurrent * 0.2 : 100;
@@ -1634,7 +1697,6 @@
             
             if (p_axisRange <= 0) p_axisRange = 1; 
 
-            /* 3. Vypočítaj percentá */
             const currentPercent = ((effectiveCurrent - p_axisMin) / p_axisRange) * 100;
             const lowPercent = ((low - p_axisMin) / p_axisRange) * 100;
             const highPercent = ((high - p_axisMin) / p_axisRange) * 100;
@@ -1643,14 +1705,15 @@
             if (low > 0) mainLabelPercents.push(lowPercent);
             if (high > 0) mainLabelPercents.push(highPercent);
 
-            /* 4. Aktualizuj pozície a viditeľnosť */
+            /* --- ZMENENÁ LOGIKA DELTY --- */
             const deltaLow = (current > 0 && low > 0) ? current - low : 0;
             const deltaHigh = (current > 0 && high > 0) ? high - current : 0;
 
             if (current > 0) {
                 document.getElementById('current-dot').style.bottom = `${clamp(currentPercent)}%`;
                 document.getElementById('current-label').style.bottom = `${clamp(currentPercent)}%`;
-                document.getElementById('current-label').textContent = `CENA: ${formatSkNumber(current)}`;
+                // POUŽI NOVÝ FORMÁTOVAČ
+                document.getElementById('current-label').textContent = `CENA: ${formatDynamicSkNumber(current)}`;
                 document.getElementById('current-dot').classList.remove('hidden');
                 document.getElementById('current-label').classList.remove('hidden');
             } else {
@@ -1660,28 +1723,28 @@
             
             document.getElementById('low-dot').style.bottom = `${clamp(lowPercent)}%`;
             document.getElementById('low-label').style.bottom = `${clamp(lowPercent)}%`;
-            const deltaLowText = (deltaLow > 0) ? ` (-${skDeltaFormatter.format(deltaLow)})` : ` (+${skDeltaFormatter.format(Math.abs(deltaLow))})`;
+            // POUŽI NOVÝ FORMÁTOVAČ A OPRAVENÚ LOGIKU ZNAMIENKA
+            const deltaLowText = (deltaLow >= 0) ? ` (+${formatDynamicDelta(deltaLow)})` : ` (-${formatDynamicDelta(deltaLow)})`;
             if (low <= 0) {
-                 document.getElementById('low-label').textContent = `LOW: ${formatSkNumber(low)}`;
+                 document.getElementById('low-label').textContent = `LOW: ${formatDynamicSkNumber(low)}`;
             } else {
-                 document.getElementById('low-label').textContent = `LOW: ${formatSkNumber(low)}${deltaLowText}`;
+                 document.getElementById('low-label').textContent = `LOW: ${formatDynamicSkNumber(low)}${deltaLowText}`;
             }
             document.getElementById('low-dot').classList.remove('hidden');
             document.getElementById('low-label').classList.remove('hidden');
 
             document.getElementById('high-dot').style.bottom = `${clamp(highPercent)}%`;
             document.getElementById('high-label').style.bottom = `${clamp(highPercent)}%`;
-            const deltaHighText = (deltaHigh > 0) ? ` (+${skDeltaFormatter.format(deltaHigh)})` : ` (-${skDeltaFormatter.format(Math.abs(deltaHigh))})`;
+            // POUŽI NOVÝ FORMÁTOVAČ A OPRAVENÚ LOGIKU ZNAMIENKA
+            const deltaHighText = (deltaHigh >= 0) ? ` (-${formatDynamicDelta(deltaHigh)})` : ` (+${formatDynamicDelta(deltaHigh)})`;
             if (high <= 0) {
-                 document.getElementById('high-label').textContent = `HIGH: ${formatSkNumber(high)}`;
+                 document.getElementById('high-label').textContent = `HIGH: ${formatDynamicSkNumber(high)}`;
             } else {
-                 document.getElementById('high-label').textContent = `HIGH: ${formatSkNumber(high)}${deltaHighText}`;
+                 document.getElementById('high-label').textContent = `HIGH: ${formatDynamicSkNumber(high)}${deltaHighText}`;
             }
             document.getElementById('high-dot').classList.remove('hidden');
             document.getElementById('high-label').classList.remove('hidden');
             
-
-            /* 5. Ulož globálne pre D&D a Grid */
             axisMin = p_axisMin;
             axisMax = p_axisMax;
             axisRange = p_axisRange;
@@ -1715,7 +1778,8 @@
                     
                     const labelEl = document.createElement('span');
                     labelEl.className = 'axis-grid-label-text';
-                    labelEl.textContent = formatSkNumber(price);
+                    // POUŽI NOVÝ FORMÁTOVAČ
+                    labelEl.textContent = formatDynamicSkNumber(price);
 
                     itemEl.appendChild(labelEl); 
                     gridLinesContainer.appendChild(itemEl);
@@ -1830,11 +1894,13 @@
             }
 
             if (!isNaN(numValue)) {
-                input.value = formatSkNumber(numValue);
+                // POUŽI NOVÝ FORMÁTOVAČ
+                input.value = formatDynamicSkNumber(numValue);
             } else if (value !== "") {
                 let lastValid = parseLocaleNumber(input.dataset.lastValid || '0');
                 if (input.id === 'low-threshold' && lastValid < MIN_PRICE) lastValid = MIN_PRICE;
-                input.value = formatSkNumber(lastValid);
+                // POUŽI NOVÝ FORMÁTOVAČ
+                input.value = formatDynamicSkNumber(lastValid);
             } else {
                  input.dataset.lastValid = '';
             }
@@ -1936,12 +2002,14 @@
                     newPrice = currentBtcPrice;
                 }
                 newPrice = Math.max(MIN_PRICE, newPrice); 
-                lowThresholdInput.value = formatSkNumber(newPrice);
+                // POUŽI NOVÝ FORMÁTOVAČ
+                lowThresholdInput.value = formatDynamicSkNumber(newPrice);
             } else if (isDragging === 'high') {
                 if (newPrice <= currentBtcPrice) {
                     newPrice = currentBtcPrice;
                 }
-                highThresholdInput.value = formatSkNumber(newPrice);
+                // POUŽI NOVÝ FORMÁTOVAČ
+                highThresholdInput.value = formatDynamicSkNumber(newPrice);
             }
             
             const lowVal = parseLocaleNumber(lowThresholdInput.value) || 0;
