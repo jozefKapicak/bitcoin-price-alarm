@@ -296,10 +296,20 @@
 <body class="h-full p-4 md:p-8 bg-gray-900 text-gray-200">
 
     <div class="max-w-7xl mx-auto">
-        <!-- Hlavný grid: ZMENA ROZLOŽENIA (5/12 Graf | 3/12 Obľúbené | 4/12 Nastavenia) -->
+        <!-- 
+            Hlavný grid: Tieto triedy zaisťujú responzivitu.
+            - `flex-col`: Na mobiloch (predvolené) sú boxy pod sebou.
+            - `md:flex-row`: Na stredných a väčších obrazovkách (`md:`) sa zmenia na riadok vedľa seba.
+            - `md:space-x-8`: Medzery sa pridajú iba na väčších obrazovkách.
+        -->
         <div class="flex flex-col md:flex-row md:space-x-8">
 
-            <!-- 1. Stĺpec: Vertikálny graf (OPRAVA ŠÍRKY: 5/12) -->
+            <!-- 
+                1. Stĺpec: Graf
+                - `md:w-5/12`: Šírka sa aplikuje iba na `md:` obrazovkách. Na mobile je šírka automatická (100%).
+                - `mb-6`: Spodný okraj na mobile.
+                - `md:mb-0`: Nulový spodný okraj na `md:` obrazovkách.
+            -->
             <div class="md:w-5/12 mb-6 md:mb-0">
                 <div class="bg-gray-800 shadow-xl rounded-lg p-4 sticky top-8">
                     <!-- Hlavička grafu - UPRAVENÁ v10.14 -->
@@ -375,7 +385,11 @@
                 </div>
             </div>
 
-            <!-- 2. Stĺpec: NOVÝ OBĽÚBENÉ (3/12) -->
+            <!-- 
+                2. Stĺpec: Obľúbené
+                - `md:w-3/12`: Šírka iba pre `md:`.
+                - `mb-6 md:mb-0`: Okraje pre mobil/desktop.
+            -->
             <div class="md:w-3/12 mb-6 md:mb-0">
                 <div class="bg-gray-800 shadow-xl rounded-lg p-4 sticky top-8">
                       <h2 class="text-xl font-bold text-white mb-4">Obľúbené</h2>
@@ -394,7 +408,11 @@
                 </div>
             </div>
 
-            <!-- 3. Stĺpec: Nastavenia (OPRAVA ŠÍRKY: 4/12) -->
+            <!-- 
+                3. Stĺpec: Nastavenia
+                - `md:w-4/12`: Šírka iba pre `md:`. 
+                - (Žiaden `mb-6` nie je potrebný, lebo je to posledná položka v stĺpci na mobile)
+            -->
             <div class="md:w-4/12">
                 <div class="bg-gray-800 shadow-xl rounded-lg p-6">
                     <h2 class="text-2xl font-bold text-white mb-6">Nastavenia</h2>
@@ -440,7 +458,11 @@
                         </div>
                     </div>
                     
-                    <!-- Riadok 3: Manuálne nastavenie -->
+                    <!-- 
+                        Riadok 3: Manuálne nastavenie
+                        - `grid-cols-1`: 1 stĺpec na mobile (predvolené).
+                        - `md:grid-cols-2`: 2 stĺpce na `md:` obrazovkách.
+                    -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         <div>
                             <label for="low-threshold" class="block text-sm font-medium text-gray-300 mb-2">Dolná Hranica (Low) <span class="text-red-400">*</span></label>
