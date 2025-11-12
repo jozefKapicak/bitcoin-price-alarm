@@ -283,9 +283,18 @@
                         <div class="flex items-center space-x-2">
                            <h2 class="text-xl font-bold text-white">Cenová Os</h2>
                             <!-- Tlačidlo Recentrovať -->
-                            <button id="recenter-button" class="recenter-btn" title="Recentrovať graf">
+                            <button id="recenter-button" class="recenter-btn" title="Recentrovať graf (zobraziť uložené hranice)">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                   <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7V9a1 1 0 01-2 0V3a1 1 0 011-1zm.004 10a1 1 0 011.885-.666A5.002 5.002 0 0014.001 13V11a1 1 0 112 0v6a1 1 0 01-1 1h-6a1 1 0 110-2h2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.004-1.334z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                            <!-- NOVÉ: Tlačidlo Hard Reset -->
+                            <button id="hard-reset-button" class="recenter-btn" title="Hard Reset: Vypočítať a uložiť nové 0.1% hranice">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                                    <path fill-rule="evenodd" d="M9 10a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0v-1.5A.75.75 0 0 1 9 10Z" clip-rule="evenodd" />
+                                    <path fill-rule="evenodd" d="M8.25 10a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 0 1.5h-1.5A.75.75 0 0 1 8.25 10Z" clip-rule="evenodd" />
+                                    <path fill-rule="evenodd" d="M9 10a.75.75 0 0 1 .75-.75h.01a.75.75 0 0 1 .75.75v.01a.75.75 0 0 1-.75.75h-.01A.75.75 0 0 1 9 10Z" clip-rule="evenodd" />
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm-5.75-8a.75.75 0 0 0 0 1.5h.01a.75.75 0 0 0 0-1.5h-.01ZM10 4.25a.75.75 0 0 1 .75.75v.01a.75.75 0 0 1-1.5 0v-.01a.75.75 0 0 1 .75-.75ZM10 15.75a.75.75 0 0 1 .75-.75v-.01a.75.75 0 0 1-1.5 0v.01a.75.75 0 0 1 .75.75ZM15.75 10a.75.75 0 0 0 0-1.5h-.01a.75.75 0 0 0 0 1.5h.01Z" clip-rule="evenodd" />
                                 </svg>
                             </button>
                         </div>
@@ -522,6 +531,7 @@
         const alarmSoundToggle = document.getElementById('alarm-sound-toggle'); 
         const priceAxisWrapper = document.getElementById('price-axis-wrapper'); 
         const recenterButton = document.getElementById('recenter-button'); 
+        const hardResetButton = document.getElementById('hard-reset-button'); // NOVÉ
         const favoritesBar = document.getElementById('favorites-list'); 
         const addFavoriteButton = document.getElementById('add-favorite-btn'); /* ZMENA ID */
 
@@ -1397,6 +1407,35 @@
             checkPriceAndAlert(); 
         }
 
+        /* --- NOVÁ FUNKCIA: Hard Reset na 0.1% --- */
+        function hardResetToPointOnePercent() {
+            initializeAudio();
+            if (currentBtcPrice <= 0) {
+                logToJournal("Chyba: Hard Reset 0.1% nie je možný, cena nie je načítaná.");
+                return;
+            }
+
+            // 1. Vypočítaj nové hodnoty
+            let newLow = currentBtcPrice * (1 - 0.001);
+            let newHigh = currentBtcPrice * (1 + 0.001);
+            newLow = Math.max(MIN_PRICE, newLow); // Ochrana
+
+            // 2. Aktualizuj polia
+            lowThresholdInput.value = formatSkNumber(newLow);
+            highThresholdInput.value = formatSkNumber(newHigh);
+            
+            // 3. Uloží a zaloguje nové hodnoty
+            // (true = fromDrag, ne-reštartuje monitoring, ale uloží coin a globálne nastavenia)
+            saveSettings(true); 
+
+            // 4. Okamžite prekresli os
+            updatePriceAxis(currentBtcPrice, newLow, newHigh, true); // true = force proportional
+            
+            // 5. Pridaj explicitný log
+            logToJournal(`Hard Reset 0.1% vykonaný pre ${currentCoinSymbol}.`);
+        }
+
+
         /* --- Funkcia na vykreslenie osi (OPRAVENÁ PRE SANDUSDT v6) --- */
         function updatePriceAxis(current, low, high, forceProportional = false) {
             let p_axisMin, p_axisMax, p_axisRange;
@@ -1671,6 +1710,9 @@
             initializeAudio(); 
             forceRedrawAxis(); 
         });
+
+        /* NOVÉ: Listener pre Hard Reset */
+        hardResetButton.addEventListener('click', hardResetToPointOnePercent);
 
         alarmEnabledToggle.addEventListener('click', () => {
             updateAlarmSystemStatus(true); 
