@@ -579,6 +579,10 @@
         let axisRect, axisMin, axisMax, axisRange; /* Pre D&D a grid */
         let forceProportionalUpdate = false; /* Pre Recentrovanie */
         const MIN_PRICE = 0.000001; /* Minimálna cena (proti bankrotu) */
+        
+        // NOVÉ PREMENNÉ PRE PLYNULÝ ŤAH
+        let dragStartY = 0;
+        let dragStartPrice = 0;
 
         /* --- Synth pre Tone.js --- */
         let lowAlarmSynth, highAlarmSynth;
@@ -1956,7 +1960,7 @@
         lowThresholdInput.addEventListener('focus', storeLastValid);
         highThresholdInput.addEventListener('focus', storeLastValid);
         
-        /* --- D&D Listeners --- */
+        /* --- D&D Listeners (UPRAVENÉ PRE PLYNULÝ ŤAH) --- */
         function handleDragStart(e, type) {
             e.preventDefault();
             initializeAudio(); 
@@ -1968,6 +1972,16 @@
 
             isDragging = type;
             axisRect = document.querySelector('.price-axis-container').getBoundingClientRect();
+            
+            // --- NOVÁ LOGIKA pre prirodzenejší ťah ---
+            dragStartY = e.touches ? e.touches[0].clientY : e.clientY;
+            if (isDragging === 'low') {
+                dragStartPrice = parseLocaleNumber(lowThresholdInput.value) || 0;
+            } else {
+                dragStartPrice = parseLocaleNumber(highThresholdInput.value) || 0;
+            }
+            // --- Koniec novej logiky ---
+            
             document.body.style.cursor = 'ns-resize'; 
             document.addEventListener('mousemove', handleDragMove);
             document.addEventListener('mouseup', handleDragEnd);
@@ -1990,25 +2004,33 @@
 
             if (!axisRect) axisRect = document.querySelector('.price-axis-container').getBoundingClientRect();
             
-            const relativeY = clientY - axisRect.top;
-            let percent = 100 - (relativeY / axisRect.height) * 100; 
-            percent = Math.min(100, Math.max(0, percent)); 
+            // --- PREPRACOVANÁ LOGIKA POHYBU ---
+            
+            // 1. Vypočítaj delta Y (v pixeloch) od začiatku ťahania
+            const deltaY = dragStartY - clientY; // Obrátené, keďže Y 0 je hore
 
-            if (axisRange <= 0 || isNaN(axisRange)) return; 
-            let newPrice = axisMin + (percent / 100) * axisRange;
+            // 2. Prepočítaj pixely na cenu
+            if (axisRange <= 0 || isNaN(axisRange) || axisRect.height <= 0) return; 
+            const pricePerPixel = axisRange / axisRect.height;
+            const priceDelta = deltaY * pricePerPixel;
 
+            // 3. Aplikuj deltu na pôvodnú cenu
+            let newPrice = dragStartPrice + priceDelta;
+            
+            // --- Koniec prepracovanej logiky ---
+
+
+            /* --- OBMEDZENIA POHYBU (zostávajú rovnaké) --- */
             if (isDragging === 'low') {
                 if (newPrice >= currentBtcPrice) {
-                    newPrice = currentBtcPrice;
+                    newPrice = currentBtcPrice; /* Zastav na aktuálnej cene */
                 }
                 newPrice = Math.max(MIN_PRICE, newPrice); 
-                // POUŽI NOVÝ FORMÁTOVAČ
                 lowThresholdInput.value = formatDynamicSkNumber(newPrice);
             } else if (isDragging === 'high') {
                 if (newPrice <= currentBtcPrice) {
-                    newPrice = currentBtcPrice;
+                    newPrice = currentBtcPrice; /* Zastav na aktuálnej cene */
                 }
-                // POUŽI NOVÝ FORMÁTOVAČ
                 highThresholdInput.value = formatDynamicSkNumber(newPrice);
             }
             
